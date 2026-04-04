@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Bell, Plus, Send, Moon, Sun, User, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,10 +12,13 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { SearchBar } from "@/components/dashboard/SearchBar";
+import { useAuth } from "@/contexts/AuthContext";
+
 
 export function TopNav() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDark, setIsDark] = useState(true);
+  const {user, logout} = useAuth()
 
   const toggleTheme = () => {
     setIsDark(!isDark);
@@ -57,7 +61,11 @@ export function TopNav() {
 
           {/* Theme Toggle */}
           <Button variant="ghost" size="icon" onClick={toggleTheme}>
-            {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            {isDark ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
           </Button>
 
           {/* Notifications */}
@@ -72,29 +80,34 @@ export function TopNav() {
               <Button variant="ghost" size="icon" className="rounded-full">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                    JD
+                    {user?.fullname.split(" ").map(n=>n[0]) || "U"}
                   </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <div className="px-2 py-1.5">
-                <p className="text-sm font-medium">John Doe</p>
-                <p className="text-xs text-muted-foreground">john@example.com</p>
+                <p className="text-sm font-medium">{user?.fullname}</p>
+                <p className="text-xs text-muted-foreground">{user?.email}</p>
               </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
-                Profile
+              <DropdownMenuItem asChild>
+                <Link to="/profile" className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Profile
+                </Link>
+
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
+              <DropdownMenuItem asChild>
+                <Link to="/settings" className="flex items-center ">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Settings
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">
-                <LogOut className="mr-2 h-4 w-4" />
-                Log out
+              <DropdownMenuItem onSelect={logout} className="text-destructive">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Log out
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

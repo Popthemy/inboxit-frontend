@@ -1,13 +1,25 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  ReactNode,
+} from "react";
 import { useNavigate } from "react-router-dom";
+import api from "@/lib/api";
 
 interface User {
   id: string;
   email: string;
-  name: string;
+  fullname: string;
+  firstName: string;
+  lastname: string;
   avatar?: string;
   company?: string;
+  phoneNumber?: string;
   plan: "free" | "pro" | "enterprise";
+  bio: string;
   createdAt: string;
 }
 
@@ -33,9 +45,11 @@ const AuthContext = createContext<AuthContextType | null>(null);
 const MOCK_USER: User = {
   id: "usr_m0ck_1a2b3c4d",
   email: "john@example.com",
-  name: "John Doe",
+  fullname: "John Doe",
   company: "Acme Inc.",
   plan: "pro",
+  phoneNumber: "+234706224563",
+  bio: "Software Engineer",
   createdAt: "2026-01-15T10:00:00Z",
 };
 
@@ -49,9 +63,9 @@ function generateMockTokens(): AuthTokens {
   };
 }
 
-function setCookie(name: string, value: string, minutes: number) {
-  const expires = new Date(Date.now() + minutes * 60 * 1000).toUTCString();
-  document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Strict`;
+function setCookie(name: string, value: string, expires: number) {
+  const expiresDate = new Date(expires).toUTCString();
+  document.cookie = `${name}=${value}; expires=${expiresDate}; path=/; SameSite=Strict`;
 }
 
 function getCookie(name: string): string | null {
@@ -67,6 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [tokens, setTokens] = useState<AuthTokens | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   const refreshAccessToken = useCallback(async () => {
     const refreshToken = getCookie("inboxit_refresh");
@@ -75,6 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setTokens(null);
       return;
     }
+
     // Simulate API call to refresh
     await new Promise((r) => setTimeout(r, 300));
     const newTokens = generateMockTokens();
@@ -86,20 +102,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Initialize from cookies
   useEffect(() => {
-    const accessToken = getCookie("inboxit_access");
-    const refreshToken = getCookie("inboxit_refresh");
-    const expiresAt = getCookie("inboxit_expires");
+    const res = async () => {
+      const accessToken = getCookie("inboxit_access");
+      const refreshToken = getCookie("inboxit_refresh");
+      const expiresAt = getCookie("inboxit_expires");
 
-    if (accessToken && refreshToken && expiresAt) {
-      const exp = Number(expiresAt);
-      if (Date.now() < exp) {
-        setTokens({ accessToken, refreshToken, expiresAt: exp });
-        setUser(MOCK_USER);
-      } else {
-        // Token expired — try refresh
-        refreshAccessToken().then(() => setUser(MOCK_USER));
+      if (accessToken && refreshToken && expiresAt) {
+        const exp = Number(expiresAt);
+        if (Date.now() < exp) {
+          setTokens({ accessToken, refreshToken, expiresAt: exp });
+
+          await fetchProfile(accessToken);
+        } else {
+          // Token expired — try refresh
+          refreshAccessToken().then(() => setUser(MOCK_USER));
+        }
       }
-    }
+    };
+    res();
+
     setIsLoading(false);
   }, [refreshAccessToken]);
 
@@ -117,14 +138,64 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, _password: string) => {
     setIsLoading(true);
-    await new Promise((r) => setTimeout(r, 800));
-    const newTokens = generateMockTokens();
-    setTokens(newTokens);
-    setUser({ ...MOCK_USER, email });
-    setCookie("inboxit_access", newTokens.accessToken, 30);
-    setCookie("inboxit_refresh", newTokens.refreshToken, 7 * 24 * 60);
-    setCookie("inboxit_expires", String(newTokens.expiresAt), 30);
-    setIsLoading(false);
+    try {
+      const res = await api.post(`/users/login/`, {
+        email,
+        password: _password,
+      });
+
+      const { token } = res.data;
+      const expiresAt = Date.now() + token.expires * 1000;
+
+      const newTokens: AuthTokens = {
+        accessToken: token.accessToken,
+        refreshToken: token.refreshToken,
+        expiresAt: expiresAt,
+      };
+      setTokens(newTokens);
+      // setUser({ ...MOCK_USER, email });
+      setCookie("inboxit_access", newTokens.accessToken, expiresAt);
+      setCookie(
+        "inboxit_refresh",
+        newTokens.refreshToken,
+        2 * 24 * 60 * 60 * 1000,
+      );
+      setCookie("inboxit_expires", String(newTokens.expiresAt), expiresAt);
+      await fetchProfile(newTokens.accessToken);
+    } catch (err: any) {
+      const responseData = err.response?.data || {};
+      const specificError =
+        responseData?.data?.non_field_errors?.[0] ||
+        responseData?.detail ||
+        "Authentication Failed";
+      console.error("Login error:", err.response || err);
+      throw new Error(specificError);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchProfile = async (access: string) => {
+    if (!access) return;
+    try {
+      const res = await api.get(`/users/me/`, {
+        headers: { Authorization: `Bearer ${access}` },
+      });
+      const { data } = res.data;
+
+      console.log("profile data:", data);
+      setUser({
+        ...data,
+        createdAt: new Date(data.created_at).toLocaleDateString("en-US", {
+          month: "long",
+          year: "numeric",
+        }),
+      });
+    } catch (err) {
+      console.error("Profile fetch error:", err.response || err);
+      logout();
+      throw new Error("Failed to fetch user profile", err.response.data);
+    }
   };
 
   const signup = async (name: string, email: string, _password: string) => {
@@ -145,6 +216,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     deleteCookie("inboxit_access");
     deleteCookie("inboxit_refresh");
     deleteCookie("inboxit_expires");
+    navigate("/");
   };
 
   return (

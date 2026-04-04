@@ -25,8 +25,8 @@ export default function Login() {
       await login(email, password);
       toast({ title: "Welcome back!", description: "You've been signed in successfully." });
       navigate("/dashboard");
-    } catch {
-      toast({ title: "Error", description: "Invalid credentials.", variant: "destructive" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "Invalid credentials.", variant: "destructive" });
     }
   };
 
@@ -39,7 +39,7 @@ export default function Login() {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4">
-      <div className="w-full max-w-5xl grid lg:grid-cols-2 gap-8 items-center">
+      <div className="w-full max-w-5xl grid lg:grid-cols-2 gap-8 items-sticky">
         {/* Left side - Video */}
         <div className="hidden lg:flex justify-self-end items-center justify-center">
           <div className="w-full aspect-[9/16] rounded-2xl border border-border flex overflow-hidden">

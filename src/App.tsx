@@ -30,6 +30,8 @@ import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
+import OnTop from "./components/common/onTop";
+
 
 const queryClient = new QueryClient();
 
@@ -39,6 +41,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+      <OnTop /> 
         <AuthProvider>
           <Routes>
             {/* Public Routes */}
@@ -63,6 +66,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
+      <OnTop/>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

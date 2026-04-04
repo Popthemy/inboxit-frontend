@@ -30,6 +30,7 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 
+
 const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "API Keys", url: "/api-keys", icon: Key },
@@ -40,6 +41,7 @@ const navItems = [
   { title: "Changelog", url: "/changelog", icon: History },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
+
 
 export function AppSidebar() {
   const { state, toggleSidebar } = useSidebar();
@@ -118,11 +120,11 @@ export function AppSidebar() {
             <Link to="/profile" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors">
               <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
                 <span className="text-primary text-xs font-bold">
-                  {user.name?.split(" ").map(n => n[0]).join("") || "U"}
+                  {user.fullname?.split(" ").map(n => n[0]).join("") || "U"}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-sidebar-foreground truncate">{user.name}</p>
+                <p className="text-sm font-medium text-sidebar-foreground truncate">{user.fullname}</p>
                 <p className="text-xs text-muted-foreground truncate">{user.email}</p>
               </div>
             </Link>
