@@ -1,9 +1,10 @@
 import axios from "axios";
 import { camelizeKeys, decamelizeKeys } from "humps";
+import { getCookie } from "@/contexts/AuthContext";
 
 
 // Base API URL — update this to your Django backend URL
-export const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
+export const API_BASE_URL = "http://127.0.0.1:8000/api/v2";
 
 
 // Setup Axios instance with interceptors
@@ -25,6 +26,15 @@ api.interceptors.response.use((response) => {
 api.interceptors.request.use((config) => {
   if (config.data) config.data = decamelizeKeys(config.data);
   if (config.params) config.params = decamelizeKeys(config.params);
+
+  const token = getCookie("inboxit_access");
+  // Skip auth for login/refresh endpoints
+  const isAuthRoute =
+    config.url?.includes("/users/login/") ||
+    config.url?.includes("/users/refresh/");
+  if (token && !isAuthRoute) {
+    config.headers["Authorization"] = `Bearer ${token}`;
+  }
   return config;
 });
 

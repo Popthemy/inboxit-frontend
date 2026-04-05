@@ -1,73 +1,54 @@
-# Welcome to your Lovable project
+# Inboxit
 
-## Project info
+**Send messages from any website form without building a backend, configuring SMTP, or writing API logic.**
 
-**URL**: https://lovable.dev/projects/48469eb4-b8ae-4e24-95b2-7f62ecd2cf43
+### The Problem
+Most developers waste hours (sometimes days) just to add a simple contact form. They end up setting up backend servers, SMTP servers, email deliverability, rate limiting, and error handling — only for a basic “message received” feature.
 
-## How can I edit this code?
+### The Solution
+Inboxit removes all that friction.
 
-There are several ways of editing your application.
+Just add one small script and point your form to our endpoint. Messages land directly in your inbox — no backend, no SMTP setup, no fetch/axios code required on your end.
 
-**Use Lovable**
+### Business Value
+- **Saves development time**: Go from days to minutes.
+- **Reduces complexity**: No server maintenance, no email infrastructure headaches.
+- **Improves reliability**: Built-in queuing and error handling so messages don’t get lost.
+- **Perfect for**: Landing pages, portfolio sites, SaaS MVPs, event registration forms, and internal tools.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/48469eb4-b8ae-4e24-95b2-7f62ecd2cf43) and start prompting.
+### How It Works (For Developers)
+1. Add the Inboxit CDN script to your HTML.
+2. Set your form’s `action` attribute to the Inboxit endpoint.
+3. Done. Submissions are handled automatically.
 
-Changes made via Lovable will be committed automatically to this repo.
+No manual fetch calls. No backend code. No configuration.
 
-**Use your preferred IDE**
+### Current Features
+- Simple form-to-email forwarding
+- Rate limiting to prevent abuse
+- Clean JSON responses for frontend handling
+- Built with Django + DRF (scalable and secure)
+- Easy integration with any frontend (React, vanilla JS, etc.)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Tech Stack
+- **Backend**: Python, Django, Django REST Framework
+- **Email Handling**: Queued processing for reliability
+- **Frontend Integration**: Lightweight CDN script (zero-dependency)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Live Demo & Integration
+[Add your demo link here once the React UI is ready]
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+Example usage:
+```html
+<form action="https://inboxit.yourdomain.com/submit/" method="POST">
+    <input type="email" name="email" required>
+    <textarea name="message" required></textarea>
+    <button type="submit">Send Message</button>
+</form>
 ```
 
-**Edit a file directly in GitHub**
+### Next Steps
+I’m currently building a clean React frontend + improved API integration.  
+Want to try it? Drop your use case below or reach out — happy to help you integrate it.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/48469eb4-b8ae-4e24-95b2-7f62ecd2cf43) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Built by **Popoola Temilorun** — Backend-focused Full-Stack Engineer (Python, Django/DRF + React).

@@ -9,12 +9,13 @@ import {
 import { useNavigate } from "react-router-dom";
 import api from "@/lib/api";
 
-interface User {
+export interface User {
   id: string;
   email: string;
   fullname: string;
   firstName: string;
-  lastname: string;
+  lastName: string;
+  gender: "M" | "F" | "other" | "";
   avatar?: string;
   company?: string;
   phoneNumber?: string;
@@ -26,11 +27,12 @@ interface User {
 interface AuthTokens {
   accessToken: string;
   refreshToken: string;
-  expiresAt: number; // timestamp in ms
+  accessExpires: number; // timestamp in ms
 }
 
 interface AuthContextType {
   user: User | null;
+  setUser: (user: User) => void;
   tokens: AuthTokens | null;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -68,7 +70,7 @@ function setCookie(name: string, value: string, expires: number) {
   document.cookie = `${name}=${value}; expires=${expiresDate}; path=/; SameSite=Strict`;
 }
 
-function getCookie(name: string): string | null {
+export function getCookie(name: string): string | null {
   const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
   return match ? match[2] : null;
 }
@@ -83,51 +85,114 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
+  const fetchProfile = useCallback(async (access: string) => {
+    if (!access) return;
+    try {
+      const res = await api.get(`/users/me/`, {
+        headers: { Authorization: `Bearer ${access}` },
+      });
+      if (!res.data || !res.data.data) {
+        throw new Error("Invalid profile response");
+      }
+      const { data } = res.data;
+      console.error("profile data:", data);
+
+      setUser({
+        ...data,
+        createdAt: new Date(data?.createdAt).toLocaleDateString("en-US", {
+          month: "long",
+          year: "numeric",
+        }),
+      });
+    } catch (err) {
+      console.error("Profile fetch error:", err.response || err);
+      throw new Error("Failed to fetch user profile", err.response.data);
+    }
+  }, []);
+  
+  const saveCookies = (token: AuthTokens) => {
+    const newTokens: AuthTokens = {
+        accessToken: token.accessToken,
+        refreshToken: token.refreshToken,
+        accessExpires: Date.now() + Number(token.accessExpires) * 1000,
+    };
+    
+    setTokens(newTokens);
+    // setUser({ ...MOCK_USER, email });
+    setCookie("inboxit_access", newTokens.accessToken, newTokens.accessExpires);
+    setCookie(
+      "inboxit_refresh",
+      newTokens.refreshToken,
+      Date.now() + 2 * 24 * 60 * 60 * 1000,
+    );
+    setCookie("inboxit_expires", String(newTokens.accessExpires), newTokens.accessExpires);
+  }
+
+  const logout = () => {
+    setUser(null);
+    setTokens(null);
+    deleteCookie("inboxit_access");
+    deleteCookie("inboxit_refresh");
+    deleteCookie("inboxit_expires");
+    navigate("/");
+  };
+
   const refreshAccessToken = useCallback(async () => {
     const refreshToken = getCookie("inboxit_refresh");
+    console.log("Attempting token refresh with refresh token:", refreshToken);
     if (!refreshToken) {
-      setUser(null);
-      setTokens(null);
+      logout();
       return;
     }
+    // API call to refresh
+    try {
+      const res = await api.post(`/users/refresh/`, { refresh: refreshToken });
+      const { token } = res.data;
+      console.log("refresh:", res.data);
 
-    // Simulate API call to refresh
-    await new Promise((r) => setTimeout(r, 300));
-    const newTokens = generateMockTokens();
-    setTokens(newTokens);
-    setCookie("inboxit_access", newTokens.accessToken, 30);
-    setCookie("inboxit_refresh", newTokens.refreshToken, 7 * 24 * 60);
-    setCookie("inboxit_expires", String(newTokens.expiresAt), 30);
+      saveCookies(token)
+    } catch (err) {
+      console.error("Token refresh error:", err.response || err);
+      logout();
+    }
   }, []);
+
+  console.log(
+    "cookies",
+    // getCookie("inboxit_access"),
+    getCookie("inboxit_refresh"),
+    getCookie("inboxit_expires"),
+  );
 
   // Initialize from cookies
   useEffect(() => {
     const res = async () => {
-      const accessToken = getCookie("inboxit_access");
-      const refreshToken = getCookie("inboxit_refresh");
-      const expiresAt = getCookie("inboxit_expires");
+      try {
+        const accessToken = getCookie("inboxit_access");
+        const refreshToken = getCookie("inboxit_refresh");
+        const accessExpires = getCookie("inboxit_expires");
 
-      if (accessToken && refreshToken && expiresAt) {
-        const exp = Number(expiresAt);
-        if (Date.now() < exp) {
-          setTokens({ accessToken, refreshToken, expiresAt: exp });
-
-          await fetchProfile(accessToken);
-        } else {
-          // Token expired — try refresh
-          refreshAccessToken().then(() => setUser(MOCK_USER));
+        if (accessToken && refreshToken && accessExpires) {
+          const exp = Number(accessExpires);
+          if (Date.now() < exp) {
+            setTokens({ accessToken, refreshToken, accessExpires: exp });
+            await fetchProfile(accessToken);
+          } else {
+            // Token expired — try refresh
+            await refreshAccessToken();
+          }
         }
+      } finally {
+        setIsLoading(false);
       }
     };
     res();
-
-    setIsLoading(false);
-  }, [refreshAccessToken]);
+  }, [refreshAccessToken, fetchProfile]);
 
   // Auto-refresh before expiry
   useEffect(() => {
     if (!tokens) return;
-    const timeUntilExpiry = tokens.expiresAt - Date.now() - 60000; // refresh 1min before
+    const timeUntilExpiry = tokens.accessExpires - Date.now() - 60000; // refresh 1min before
     if (timeUntilExpiry <= 0) {
       refreshAccessToken();
       return;
@@ -135,6 +200,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const timer = setTimeout(refreshAccessToken, timeUntilExpiry);
     return () => clearTimeout(timer);
   }, [tokens, refreshAccessToken]);
+
 
   const login = async (email: string, _password: string) => {
     setIsLoading(true);
@@ -145,23 +211,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       const { token } = res.data;
-      const expiresAt = Date.now() + token.expires * 1000;
+      saveCookies(token);
 
-      const newTokens: AuthTokens = {
-        accessToken: token.accessToken,
-        refreshToken: token.refreshToken,
-        expiresAt: expiresAt,
-      };
-      setTokens(newTokens);
-      // setUser({ ...MOCK_USER, email });
-      setCookie("inboxit_access", newTokens.accessToken, expiresAt);
-      setCookie(
-        "inboxit_refresh",
-        newTokens.refreshToken,
-        2 * 24 * 60 * 60 * 1000,
-      );
-      setCookie("inboxit_expires", String(newTokens.expiresAt), expiresAt);
-      await fetchProfile(newTokens.accessToken);
+      await fetchProfile(token.accessToken);
     } catch (err: any) {
       const responseData = err.response?.data || {};
       const specificError =
@@ -175,29 +227,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const fetchProfile = async (access: string) => {
-    if (!access) return;
-    try {
-      const res = await api.get(`/users/me/`, {
-        headers: { Authorization: `Bearer ${access}` },
-      });
-      const { data } = res.data;
-
-      console.log("profile data:", data);
-      setUser({
-        ...data,
-        createdAt: new Date(data.created_at).toLocaleDateString("en-US", {
-          month: "long",
-          year: "numeric",
-        }),
-      });
-    } catch (err) {
-      console.error("Profile fetch error:", err.response || err);
-      logout();
-      throw new Error("Failed to fetch user profile", err.response.data);
-    }
-  };
-
   const signup = async (name: string, email: string, _password: string) => {
     setIsLoading(true);
     await new Promise((r) => setTimeout(r, 800));
@@ -205,24 +234,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setTokens(newTokens);
     setUser({ ...MOCK_USER, name, email, createdAt: new Date().toISOString() });
     setCookie("inboxit_access", newTokens.accessToken, 30);
-    setCookie("inboxit_refresh", newTokens.refreshToken, 7 * 24 * 60);
+    setCookie(
+      "inboxit_refresh",
+      newTokens.refreshToken,
+      2 * 24 * 60 * 60 * 1000,
+    );
     setCookie("inboxit_expires", String(newTokens.expiresAt), 30);
     setIsLoading(false);
-  };
-
-  const logout = () => {
-    setUser(null);
-    setTokens(null);
-    deleteCookie("inboxit_access");
-    deleteCookie("inboxit_refresh");
-    deleteCookie("inboxit_expires");
-    navigate("/");
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        setUser,
         tokens,
         isAuthenticated: !!user,
         isLoading,
