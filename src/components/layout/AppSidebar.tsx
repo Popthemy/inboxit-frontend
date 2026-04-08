@@ -2,10 +2,10 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard,
-  Key,
-  Route,
+  Plug,
   MessageSquare,
   BarChart3,
+  Bell,
   FileText,
   Settings,
   ChevronLeft,
@@ -30,18 +30,16 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 
-
 const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "API Keys", url: "/api-keys", icon: Key },
-  { title: "Routes", url: "/routes", icon: Route },
+  { title: "Integrations", url: "/integrations", icon: Plug },
   { title: "Messages", url: "/messages", icon: MessageSquare },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
+  { title: "Notifications", url: "/notifications", icon: Bell },
   { title: "Documentation", url: "/docs", icon: FileText },
   { title: "Changelog", url: "/changelog", icon: History },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
-
 
 export function AppSidebar() {
   const { state, toggleSidebar } = useSidebar();
@@ -56,14 +54,19 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-sidebar">
+    <Sidebar
+      collapsible="icon"
+      className="border-r border-sidebar-border bg-sidebar"
+    >
       <SidebarHeader className="p-4">
         <Link to="/" className="flex items-center gap-3">
           <motion.div
             className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center"
             whileHover={{ scale: 1.05 }}
           >
-            <span className="text-primary-foreground font-bold text-sm">IB</span>
+            <span className="text-primary-foreground font-bold text-sm">
+              IB
+            </span>
           </motion.div>
           {!collapsed && (
             <motion.span
@@ -92,10 +95,12 @@ export function AppSidebar() {
                           "flex items-center gap-3 px-3 py-2 rounded-lg transition-all",
                           isActive
                             ? "bg-sidebar-accent text-sidebar-primary font-medium"
-                            : "text-sidebar-foreground hover:bg-sidebar-accent/50"
+                            : "text-sidebar-foreground hover:bg-sidebar-accent/50",
                         )}
                       >
-                        <item.icon className={cn("h-5 w-5", isActive && "text-primary")} />
+                        <item.icon
+                          className={cn("h-5 w-5", isActive && "text-primary")}
+                        />
                         {!collapsed && <span>{item.title}</span>}
                         {isActive && !collapsed && (
                           <motion.div
@@ -117,15 +122,25 @@ export function AppSidebar() {
       <div className="mt-auto border-t border-sidebar-border">
         {!collapsed && user && (
           <div className="p-4 space-y-2">
-            <Link to="/profile" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors">
+            <Link
+              to="/profile"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors"
+            >
               <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
                 <span className="text-primary text-xs font-bold">
-                  {user.fullname?.split(" ").map(n => n[0]).join("") || "U"}
+                  {user.name
+                    ?.split(" ")
+                    .map((n) => n[0])
+                    .join("") || "U"}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-sidebar-foreground truncate">{user.fullname}</p>
-                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                <p className="text-sm font-medium text-sidebar-foreground truncate">
+                  {user.name}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user.email}
+                </p>
               </div>
             </Link>
             <Button
@@ -145,7 +160,11 @@ export function AppSidebar() {
             onClick={toggleSidebar}
             className="w-full justify-center text-sidebar-foreground hover:bg-sidebar-accent"
           >
-            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            {collapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <ChevronLeft className="h-4 w-4" />
+            )}
           </Button>
         </div>
       </div>

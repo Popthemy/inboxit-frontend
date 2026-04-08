@@ -7,7 +7,7 @@ import {
   ReactNode,
 } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "@/lib/api";
+import apiClient from "@/api/client";
 
 export interface User {
   id: string;
@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchProfile = useCallback(async (access: string) => {
     if (!access) return;
     try {
-      const res = await api.get(`/users/me/`, {
+      const res = await apiClient.get(`/users/me/`, {
         headers: { Authorization: `Bearer ${access}` },
       });
       if (!res.data || !res.data.data) {
@@ -146,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     // API call to refresh
     try {
-      const res = await api.post(`/users/refresh/`, { refresh: refreshToken });
+      const res = await apiClient.post(`/users/refresh/`, { refresh: refreshToken });
       const { token } = res.data;
       console.log("refresh:", res.data);
 
@@ -205,7 +205,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, _password: string) => {
     setIsLoading(true);
     try {
-      const res = await api.post(`/users/login/`, {
+      const res = await apiClient.post(`/users/login/`, {
         email,
         password: _password,
       });

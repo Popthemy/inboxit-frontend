@@ -9,8 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { MutedVideo } from "@/components/common/mutedVideo" 
-
 
 const benefits = [
   "100 free submissions every month",
@@ -30,11 +28,12 @@ export default function Signup() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await signup(name, email, password);
-      toast({ title: "Account created!", description: "Welcome to Inboxit." });
-      navigate("/onboarding");
+      // Simulate sending OTP to the user's email
+      await new Promise((r) => setTimeout(r, 800));
+      toast({ title: "Verification code sent!", description: `Check your inbox at ${email}` });
+      navigate(`/verify-otp?email=${encodeURIComponent(email)}&flow=signup`);
     } catch {
-      toast({ title: "Error", description: "Could not create account.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not send verification code.", variant: "destructive" });
     }
   };
 
@@ -47,10 +46,19 @@ export default function Signup() {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4">
-      <div className="w-full max-w-5xl grid lg:grid-cols-2 gap-12 items-stretch">
+      <div className="w-full max-w-5xl grid lg:grid-cols-2 gap-12 items-center">
         {/* Left side - Video */}
-        <div className="hidden lg:flex rounded-2xl justify-self-end items-center justify-center w-full max-w-sm aspect-[9/16] overflow-hidden">
-          <MutedVideo />
+        <div className="hidden lg:flex items-center justify-center">
+          <div className="w-full max-w-[320px] aspect-[9/16] rounded-2xl bg-muted border border-border flex items-center justify-center overflow-hidden">
+            {/* Replace this div's contents with a <video> tag */}
+            <div className="text-center text-muted-foreground p-6">
+              <div className="w-16 h-16 rounded-full bg-muted-foreground/10 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              </div>
+              <p className="text-sm font-medium">Product Demo</p>
+              <p className="text-xs mt-1">9:16 video placeholder</p>
+            </div>
+          </div>
         </div>
         {/* Right side - Signup Form */}
         <motion.div
@@ -59,18 +67,13 @@ export default function Signup() {
         >
           <Card className="border-border bg-card">
             <CardHeader className="text-center">
-              <Link
-                to="/"
-                className="flex items-center justify-center gap-2 mb-4 lg:hidden"
-              >
+              <Link to="/" className="flex items-center justify-center gap-2 mb-4 lg:hidden">
                 <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold">IB</span>
-                </div>
-              </Link>
-              <CardTitle className="text-2xl">Create your account</CardTitle>
-              <CardDescription>
-                Get started with Inboxit for free
-              </CardDescription>
+                <span className="text-primary-foreground font-bold">IB</span>
+              </div>
+            </Link>
+            <CardTitle className="text-2xl">Create your account</CardTitle>
+            <CardDescription>Get started with Inboxit for free</CardDescription>
             </CardHeader>
             <CardContent>
               {/* Social Signup Buttons */}
@@ -105,11 +108,7 @@ export default function Signup() {
                   className="w-full gap-2"
                   onClick={() => handleSocialSignup("GitHub")}
                 >
-                  <svg
-                    className="h-5 w-5"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
                   </svg>
                   Continue with GitHub
@@ -176,23 +175,13 @@ export default function Signup() {
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                       onClick={() => setShowPassword(!showPassword)}
                     >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Must be at least 8 characters
-                  </p>
+                  <p className="text-xs text-muted-foreground">Must be at least 8 characters</p>
                 </div>
 
-                <Button
-                  type="submit"
-                  className="w-full gap-2"
-                  disabled={isLoading}
-                >
+                <Button type="submit" className="w-full gap-2" disabled={isLoading}>
                   {isLoading ? "Creating account..." : "Create account"}
                   {!isLoading && <ArrowRight className="h-4 w-4" />}
                 </Button>
@@ -211,10 +200,7 @@ export default function Signup() {
 
               <p className="mt-6 text-center text-sm text-muted-foreground">
                 Already have an account?{" "}
-                <Link
-                  to="/login"
-                  className="text-primary hover:underline font-medium"
-                >
+                <Link to="/login" className="text-primary hover:underline font-medium">
                   Sign in
                 </Link>
               </p>

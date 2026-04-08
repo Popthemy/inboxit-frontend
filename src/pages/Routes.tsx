@@ -48,7 +48,9 @@ export default function Routes() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Routes</h1>
-          <p className="text-muted-foreground">Configure where your form submissions go.</p>
+          <p className="text-muted-foreground">
+            Configure where your form submissions go.
+          </p>
         </div>
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
           <Button className="gap-2">

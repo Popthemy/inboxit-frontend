@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Moon, Sun } from "lucide-react";
+import { Menu, X, Moon, Sun, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navLinks = [
   { name: "Features", href: "/#features" },
@@ -12,8 +13,11 @@ const navLinks = [
 ];
 
 export function PublicNavbar() {
+  const { isAuthenticated, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isDark, setIsDark] = useState(() => !document.documentElement.classList.contains("light"));
+  const [isDark, setIsDark] = useState(
+    () => !document.documentElement.classList.contains("light"),
+  );
 
   const toggleTheme = () => {
     document.documentElement.classList.toggle("light");
@@ -30,9 +34,13 @@ export function PublicNavbar() {
               className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center"
               whileHover={{ scale: 1.05 }}
             >
-              <span className="text-primary-foreground font-bold text-sm">IF</span>
+              <span className="text-primary-foreground font-bold text-sm">
+                IF
+              </span>
             </motion.div>
-            <span className="font-bold text-xl text-foreground">InboxForms</span>
+            <span className="font-bold text-xl text-foreground">
+              InboxForms
+            </span>
           </Link>
 
           {/* Desktop Nav */}
@@ -51,14 +59,34 @@ export function PublicNavbar() {
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={toggleTheme}>
-              {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              {isDark ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
             </Button>
-            <Button variant="ghost" asChild>
-              <Link to="/login">Sign in</Link>
-            </Button>
-            <Button asChild>
-              <Link to="/signup">Get Started Free</Link>
-            </Button>
+            {isAuthenticated ? (
+              <>
+                <Button variant="outline" asChild>
+                  <Link to="/dashboard" className="gap-2">
+                    <LayoutDashboard className="h-4 w-4" />
+                    Dashboard
+                  </Link>
+                </Button>
+                <Button variant="ghost" onClick={logout}>
+                  Log out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" asChild>
+                  <Link to="/login">Sign in</Link>
+                </Button>
+                <Button asChild>
+                  <Link to="/signup">Get Started Free</Link>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -66,7 +94,11 @@ export function PublicNavbar() {
             className="md:hidden p-2 text-foreground"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {mobileMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
           </button>
         </div>
       </nav>
@@ -92,16 +124,47 @@ export function PublicNavbar() {
                 </a>
               ))}
               <div className="pt-4 space-y-2">
-                <Button variant="outline" className="w-full gap-2" onClick={toggleTheme}>
-                  {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                <Button
+                  variant="outline"
+                  className="w-full gap-2"
+                  onClick={toggleTheme}
+                >
+                  {isDark ? (
+                    <Sun className="h-4 w-4" />
+                  ) : (
+                    <Moon className="h-4 w-4" />
+                  )}
                   {isDark ? "Light Mode" : "Dark Mode"}
                 </Button>
-                <Button variant="outline" className="w-full" asChild>
-                  <Link to="/login">Sign in</Link>
-                </Button>
-                <Button className="w-full" asChild>
-                  <Link to="/signup">Get Started Free</Link>
-                </Button>
+                {isAuthenticated ? (
+                  <>
+                    <Button variant="outline" className="w-full gap-2" asChild>
+                      <Link to="/dashboard">
+                        <LayoutDashboard className="h-4 w-4" />
+                        Dashboard
+                      </Link>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full"
+                      onClick={() => {
+                        logout();
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      Log out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="outline" className="w-full" asChild>
+                      <Link to="/login">Sign in</Link>
+                    </Button>
+                    <Button className="w-full" asChild>
+                      <Link to="/signup">Get Started Free</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>

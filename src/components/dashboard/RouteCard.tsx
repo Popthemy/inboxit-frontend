@@ -1,8 +1,20 @@
 import { motion } from "framer-motion";
-import { Mail, MoreVertical, Edit, Trash2, Power, PowerOff } from "lucide-react";
+import {
+  Mail,
+  MoreVertical,
+  Edit,
+  Trash2,
+  Power,
+  PowerOff,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { StatusBadge } from "./StatusBadge";
 
 interface RouteCardProps {
@@ -89,7 +101,7 @@ export function RouteCard({
                     </>
                   )}
                 </DropdownMenuItem>
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={() => onDelete?.(id)}
                   className="text-destructive focus:text-destructive"
                 >
