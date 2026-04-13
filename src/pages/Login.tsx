@@ -39,21 +39,21 @@ export default function Login() {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4">
-      <div className="w-full max-w-5xl grid lg:grid-cols-2 gap-8 items-sticky">
+      <div className="w-full max-w-5xl grid lg:grid-cols-2 gap-8 items-stretch">
         {/* Left side - Video */}
-        <div className="hidden lg:flex justify-self-end items-center justify-center">
-          <div className="w-full aspect-[9/16] rounded-2xl border border-border flex overflow-hidden">
+        <div className="hidden lg:flex h-full justify-end">
+          <div className="w-auto h-full rounded-2xl border border-border flex overflow-hidden">
             <MutedVideo />
           </div>
         </div>
 
         {/* Right side - Login Form */}
         <motion.div
-          className="w-full max-w-md mx-auto"
+          className="h-full overflow-hidden"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <Card className="border-border bg-card">
+          <Card className="border-border bg-card h-full overflow-hidden">
             <CardHeader className="text-center">
               <Link
                 to="/"
