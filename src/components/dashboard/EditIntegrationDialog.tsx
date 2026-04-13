@@ -17,8 +17,27 @@ interface EditIntegrationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   integration: RouteIntegration | null;
-  onSave: (id: string, label: string, config: Record<string, string>) => void;
+  onSave: (id: string, label: string, config: Record<string, string[]>) => void;
 }
+
+const isValidEmail = (email: string) => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
+
+const validateEmails = (input: string) => {
+  const list = input
+    .split("\n")
+    .map((e) => e.trim())
+    .filter(Boolean);
+
+  const invalid = list.filter((email) => !isValidEmail(email));
+
+  return {
+    valid: invalid.length === 0,
+    invalidEmails: invalid,
+    emails: list,
+  };
+};
 
 export function EditIntegrationDialog({
   open,
@@ -30,32 +49,72 @@ export function EditIntegrationDialog({
   const [emails, setEmails] = useState("");
   const [phone, setPhone] = useState("");
   const [webhookUrl, setWebhookUrl] = useState("");
+ 
+  const [errors, setErrors] = useState<{
+    emails?: string;
+    phone?: string;
+    webhookUrl?: string;
+  }>({});
 
   useEffect(() => {
     if (integration) {
       setLabel(integration.label);
-      setEmails(integration.config.emails || "");
-      setPhone(integration.config.phone || "");
-      setWebhookUrl(integration.config.webhookUrl || "");
+      setEmails(integration.config?.recipientEmails.join("\n") || "");
+      setPhone(integration.config?.phone || "");
+      setWebhookUrl(integration.config?.webhookUrl || "");
     }
   }, [integration]);
 
   if (!integration) return null;
 
-  const buildConfig = (): Record<string, string> => {
+  const buildConfig = (): Record<string, string[]> => {
     switch (integration.channel) {
       case "email":
-        return { emails: emails.trim() };
+        return {
+          recipientEmails: emails
+            .split("\n")
+            .map((e) => e.trim())
+            .filter(Boolean),
+        };
       case "whatsapp":
-        return { phone: phone.trim() };
+        return { phone: [phone.trim()] };
       case "slack":
-        return { webhookUrl: webhookUrl.trim() };
+        return { webhookUrl: [webhookUrl.trim()] };
       default:
         return {};
     }
   };
+   const {
+     valid,
+     invalidEmails,
+     emails: parsedEmails,
+   } = validateEmails(buildConfig().recipientEmails.join("\n"));
+
+
+
 
   const handleSave = () => {
+    const newErrors: any = {};
+
+    if (integration.channel === "email") {
+      if (!emails.trim()) {
+        newErrors.emails = "Email channel requires email addresses";
+      }
+      if (!valid) {
+        newErrors.emails = `Invalid emails: ${invalidEmails.join(", ")}`;
+      }
+    }
+    if (integration.channel === "whatsapp" && !phone.trim()) {
+      newErrors.phone = "WhatsApp channel requires a phone number";
+    }
+    if (integration.channel === "slack" && !webhookUrl.trim()) {
+      newErrors.webhookUrl = "Slack channel requires a webhook URL";
+    }
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      return;
+    }
+
     onSave(integration.id, label.trim(), buildConfig());
     onOpenChange(false);
   };
@@ -85,6 +144,9 @@ export function EditIntegrationDialog({
                 rows={3}
                 placeholder="One email per line"
               />
+              {errors.emails && (
+                <p className="text-red-500 text-sm">{errors.emails}</p>
+              )}
             </div>
           )}
           {integration.channel === "whatsapp" && (
@@ -95,6 +157,12 @@ export function EditIntegrationDialog({
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
               />
+              {errors.phone && (
+                <p className="text-red-500 text-sm">{errors.phone}</p>
+              )}
+              {errors.phone && (
+                <p className="text-red-500 text-sm">{errors.phone}</p>
+              )}
             </div>
           )}
           {integration.channel === "slack" && (
@@ -104,6 +172,9 @@ export function EditIntegrationDialog({
                 value={webhookUrl}
                 onChange={(e) => setWebhookUrl(e.target.value)}
               />
+              {errors.webhookUrl && (
+                <p className="text-red-500 text-sm">{errors.webhookUrl}</p>
+              )}
             </div>
           )}
         </div>

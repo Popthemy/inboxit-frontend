@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { integrationService } from "@/api/integrationService";
+import { dateFormat } from "@/lib/utils";
 
 interface RouteIntegration {
   id: string;
@@ -29,7 +30,7 @@ function normalizeRouteIntegration(route: any): RouteIntegration {
 
   let recipientEmails: string[] = [];
   if (route.config?.recipientEmails?.length) {
-    recipientEmails = route.config.recipientsEmails;
+    recipientEmails = route.config.recipientEmails;
   } else if (route.recipientEmails) {
     recipientEmails = route.recipientEmails
       .replace(/"/g, "")
@@ -49,7 +50,7 @@ function normalizeRouteIntegration(route: any): RouteIntegration {
 
   return {
     id: id,
-    label: route.label || recipientEmails[0] || "Untitled",
+    label: route.label || "Untitled",
     channel: route.channel,
 
     status: status,
@@ -60,17 +61,17 @@ function normalizeRouteIntegration(route: any): RouteIntegration {
       ? {
           id: route.apiKeys.live.uid ?? String(route.apiKeys.live.id),
           prefix: route.apiKeys.live.prefix,
-          lastUsed: route.apiKeys.live.lastUsedAt,
+          lastUsed: dateFormat(route.apiKeys.live.lastUsedAt),
         }
       : undefined,
     testKey: {
       id: route.apiKeys?.test.id,
       prefix: route.apiKeys?.test.prefix,
-      lastUsed: route.apiKeys?.test.lastUsedAt,
+      lastUsed: dateFormat(route.apiKeys?.test.lastUsedAt),
     },
     messageCount:
       route.apiKeys?.test?.usageCount + route.apiKeys?.live?.usageCount || 0,
-    createdAt: route.createdAt,
+    createdAt: new Date(route.createdAt).toLocaleDateString("en-US",{"day":"numeric","month":"long", "year":"numeric"}),
     deletedAt: route.deletedAt,
   };
 }
@@ -117,7 +118,6 @@ function useIntegrations() {
       const result = data.results.map(route=> normalizeRouteIntegration(route))
       setRoutes(result)
 
-      console.log(result)
     } finally {
       setLoading(false);
     }
@@ -138,18 +138,20 @@ function useIntegrations() {
   const updateIntegration = async (
     id: string,
     updates: Partial<{
-      label: string;
-      recipientEmails: string[];
-      isActive: boolean;
+      label?: string;
+      channel?: string;
+      recipientEmails?: string[];
+      isActive?: boolean;
     }>,
   ) => {
     const payload = toRoutePayload({
-      label: updates.label!,
-      channel: "email", // or keep existing
+      label: updates.label,
+      channel: updates.channel, // or keep existing
       recipientEmails: updates.recipientEmails ?? [],
+      
       isActive: updates.isActive,
     });
-
+    console.log('payload:', `payload: ${JSON.stringify(payload)}`)
     const res = await integrationService.update(id, payload);
 
     setRoutes((prev) =>
@@ -177,6 +179,8 @@ function useIntegrations() {
 
   return {
     routes,
+    setRoutes,
+    setLoading,
     loading,
 
     fetchIntegrations,
@@ -194,7 +198,7 @@ export function IntegrationsProvider({ children }: { children: ReactNode }) {
       {children}
     </IntegrationContext.Provider>
   );
-} 
+}
 
 export function useIntegrationContext() {
   const ctx = useContext(IntegrationContext);

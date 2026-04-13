@@ -82,7 +82,8 @@ const channelOptions = [
 
 
 export default function Integrations() {
-  const { routes, loading, updateRoutes } = useIntegrationContext();
+  const { routes, loading, setLoading, updateIntegration } =
+    useIntegrationContext();
   // const [routes, setRoutes] = useState(integrations);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -127,22 +128,15 @@ export default function Integrations() {
   };
 
   const handleToggle = (id: string) => {
-    setRoutes((prev) =>
-      prev.map((r) =>
-        r.id === id ? { ...r, status: r.status === "active" ? "inactive" as const : "active" as const } : r
-      )
-    );
-    toast({ title: "Status updated" });
+ 
+    updateIntegration(id, {
+      isActive: r.status === "active" ? (true as const) : (false as const),
+    });
+    toast({ title: "Status updated" })
   };
 
   const handleDelete = (id: string) => {
-    setRoutes((prev) =>
-      prev.map((r) =>
-        r.id === id
-          ? { ...r, status: "inactive" as const, deletedAt: new Date().toISOString() }
-          : r
-      )
-    );
+
     toast({ title: "Route archived", description: "The route has been soft-deleted and can be restored." });
   };
 
@@ -173,11 +167,21 @@ export default function Integrations() {
     if (route) setEditingRoute(route);
   };
 
-  const handleSaveEdit = (id: string, label: string, config: Record<string, string>) => {
-    setRoutes((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, label, config } : r))
-    );
-    toast({ title: "Route updated" });
+  // update label, config
+  const handleSaveEdit = (id: string, label: string, config: Record<string, string[]>) => {
+    setLoading(false)
+    try{
+      console.log('email:', `config: ${JSON.stringify(config)}`)
+      updateIntegration(id, { label, ...config  });
+    
+      toast({ title: "Route updated" });
+    } catch (error) {
+      console.error("Error updating route:", error);
+      toast({ title: "Error updating route", description: error.message || "Please try again." });
+    } finally{
+      setLoading(false)
+    }
+    
   };
 
   const handleShowSnippet = (id: string) => {

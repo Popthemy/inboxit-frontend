@@ -106,7 +106,7 @@ function KeyRow({
           ) : (
             <Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
           )}
-        </Button> 
+        </Button>
         <CopyButton
           text={keyData?.full}
           className="h-6 w-6 sm:h-7 sm:w-7 shrink-0"
@@ -147,8 +147,22 @@ export function IntegrationCard({
 
   const configSummary = () => {
     switch (channel) {
-      case "email":
-        return config.recipientEmails || "—";
+      case "email": {
+        const emails = config.recipientEmails;
+
+        if (!emails) return "—";
+        // Normalize to array
+        const list = Array.isArray(emails)
+          ? emails
+          : emails.split(",").map((e) => e.trim());
+
+        if (list.length === 0) return "—";
+
+        if (list.length === 1) return list[0];
+
+        // Show first + count
+        return `${list[0]} +${list.length - 1} more`;
+      }
       case "whatsapp":
         return config.phone || "—";
       case "slack":
@@ -232,22 +246,26 @@ export function IntegrationCard({
 
           {/* Keys section */}
           <div className="mt-4 space-y-3">
-             {testKey  && <KeyRow
-              env="test"
-              keyData={testKey}
-              onRegenerate={() => onRegenerateKey?.(id, "test")}
-            />}
-           {liveKey && <KeyRow
-              env="live"
-              keyData={liveKey}
-              onRegenerate={() => onRegenerateKey?.(id, "live")}
-            />}
+            {testKey && (
+              <KeyRow
+                env="test"
+                keyData={testKey}
+                onRegenerate={() => onRegenerateKey?.(id, "test")}
+              />
+            )}
+            {liveKey && (
+              <KeyRow
+                env="live"
+                keyData={liveKey}
+                onRegenerate={() => onRegenerateKey?.(id, "live")}
+              />
+            )}
           </div>
 
           {/* Stats */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] sm:text-xs text-muted-foreground mt-3 pt-3 border-t border-border">
             <span>{messageCount.toLocaleString()} messages</span>
-            <span>Created {createdAt}</span>
+            <span>Created: {createdAt}</span>
           </div>
         </CardContent>
       </Card>
