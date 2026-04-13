@@ -1,4 +1,3 @@
-Nice — you’re at the exact point where structure matters. Let’s wire this **cleanly** so your `IntegrationContext` doesn’t turn into a dumping ground.
 
 ---
 

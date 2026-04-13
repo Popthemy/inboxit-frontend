@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { IntegrationsProvider } from "@/contexts/IntegrationContext";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 
 // Layouts
@@ -59,7 +60,14 @@ const App = () => (
 
             {/* Dashboard Routes (Protected) */}
             <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout><Dashboard /></DashboardLayout></ProtectedRoute>} />
-            <Route path="/integrations" element={<ProtectedRoute><DashboardLayout><Integrations /></DashboardLayout></ProtectedRoute>} />
+            
+            <Route path="/integrations" element={
+              <ProtectedRoute><DashboardLayout>
+                <IntegrationsProvider>
+                    <Integrations />
+                </IntegrationsProvider>
+                </DashboardLayout></ProtectedRoute>} />
+          
             <Route path="/messages" element={<ProtectedRoute><DashboardLayout><Messages /></DashboardLayout></ProtectedRoute>} />
             <Route path="/messages/:id" element={<ProtectedRoute><DashboardLayout><MessageDetail /></DashboardLayout></ProtectedRoute>} />
             <Route path="/analytics" element={<ProtectedRoute><DashboardLayout><Analytics /></DashboardLayout></ProtectedRoute>} />

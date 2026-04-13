@@ -10,6 +10,8 @@ import { EditIntegrationDialog } from "@/components/dashboard/EditIntegrationDia
 import { RegenerateKeyDialog } from "@/components/dashboard/RegenerateKeyDialog";
 import { IntegrationSnippetDialog } from "@/components/dashboard/IntegrationSnippetDialog";
 import { useToast } from "@/hooks/use-toast";
+import { useIntegrationContext } from "@/contexts/IntegrationContext";
+
 
 function generateKey(prefix: string) {
   return prefix + Array.from({ length: 32 }, () =>
@@ -78,8 +80,10 @@ const channelOptions = [
   { value: "slack", label: "Slack" },
 ];
 
+
 export default function Integrations() {
-  const [routes, setRoutes] = useState(initialRoutes);
+  const { routes, loading, updateRoutes } = useIntegrationContext();
+  // const [routes, setRoutes] = useState(integrations);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [channelFilter, setChannelFilter] = useState("all");

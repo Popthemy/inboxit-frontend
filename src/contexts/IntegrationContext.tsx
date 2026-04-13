@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { integrationService } from "@/api/integrationService";
 
 interface RouteIntegration {
@@ -25,7 +25,7 @@ interface RouteIntegration {
 }
 
 function normalizeRouteIntegration(route: any): RouteIntegration {
-  const id = route.uid ?? String(route.id);
+  const id = route.id ?? String(route.uid);
 
   let recipientEmails: string[] = [];
   if (route.config?.recipientEmails?.length) {
@@ -69,10 +69,17 @@ function normalizeRouteIntegration(route: any): RouteIntegration {
       lastUsed: route.apiKeys?.test.lastUsedAt,
     },
     messageCount:
-      route.apiKeys?.test.usageCount + route.apiKeys?.live.usageCount || 0,
+      route.apiKeys?.test?.usageCount + route.apiKeys?.live?.usageCount || 0,
     createdAt: route.createdAt,
     deletedAt: route.deletedAt,
   };
+}
+
+interface RouteIntegrationPayload {
+  label?: string;
+  channel?: string;
+  isActive?: boolean;
+  recipientEmails?: string[];
 }
 
 /**
@@ -80,16 +87,19 @@ function normalizeRouteIntegration(route: any): RouteIntegration {
  * @param input payload to upload the value that change
  * @returns valid pattern suitable for backend
  */
-function toRoutePayload(input: Partial<RouteIntegration>) {
+function toRoutePayload(input: RouteIntegrationPayload) {
   return {
     label: input.label,
     channel: input.channel,
-    isActive: input.status === "active",
+    isActive: input.isActive,
     config: {
-      recipientEmails: input.config?.recipientEmails,
+      recipientEmails: input.recipientEmails ?? [],
     },
   };
 }
+
+const IntegrationContext = createContext<RouteIntegration[]>([]);
+
 
 function useIntegrations() {
   const [routes, setRoutes] = useState<RouteIntegration[]>([]);
@@ -102,8 +112,12 @@ function useIntegrations() {
       const data = await integrationService.list(
         "?is_deleted=false&ordering=-is_active",
       );
+      
+      // setRoutes(data.results.map(route=> normalizeRouteIntegration(route)));
+      const result = data.results.map(route=> normalizeRouteIntegration(route))
+      setRoutes(result)
 
-      setRoutes(data.results.map(normalizeRouteIntegration));
+      console.log(result)
     } finally {
       setLoading(false);
     }
@@ -129,7 +143,7 @@ function useIntegrations() {
       isActive: boolean;
     }>,
   ) => {
-    const payload = toApiPayload({
+    const payload = toRoutePayload({
       label: updates.label!,
       channel: "email", // or keep existing
       recipientEmails: updates.recipientEmails ?? [],
@@ -139,7 +153,7 @@ function useIntegrations() {
     const res = await integrationService.update(id, payload);
 
     setRoutes((prev) =>
-      prev.map((r) => (r.id === id ? normalizeIntegration(res) : r)),
+      prev.map((r) => (r.id === id ? normalizeRouteIntegration(res) : r)),
     );
   };
 
@@ -154,7 +168,7 @@ function useIntegrations() {
   // ✅ RETRIEVE (optional detail view)
   const getIntegration = async (id: string) => {
     const res = await integrationService.retrieve(id);
-    return normalizeIntegration(res);
+    return normalizeRouteIntegration(res);
   };
 
   useEffect(() => {
@@ -172,6 +186,26 @@ function useIntegrations() {
     getIntegration,
   };
 }
+
+export function IntegrationsProvider({ children }: { children: ReactNode }) {
+  const integrations = useIntegrations();
+  return (
+    <IntegrationContext.Provider value={integrations}>
+      {children}
+    </IntegrationContext.Provider>
+  );
+} 
+
+export function useIntegrationContext() {
+  const ctx = useContext(IntegrationContext);
+
+  if (!ctx) {
+    throw new Error("useIntegrationContext must be used within a IntegrationContextProvider");
+  }
+  return ctx;
+}
+
+
 
 // // for get integration list apikey live or key might exist if it only.
 // {

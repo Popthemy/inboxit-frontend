@@ -175,7 +175,7 @@ export default function VerifyOTP() {
                 className="gap-2"
                 onClick={handleResendOTP}
               >
-                <RefreshCw className="h-4 w-4" />
+                <ReafreshCw className="h-4 w-4" />
                 Resend OTP
               </Button>
             </div>

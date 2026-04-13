@@ -5,7 +5,7 @@ const isSafari = () => {
   return ua.indexOf("safari") > -1 && ua.indexOf("chrome") < 0;
 };
 
-const mainVideo = "../images/inboxjet-liveshow.mp4";
+const mainVideo = "../video/inboxit-liveshow.mp4";
 
 export function MutedVideo() {
   const videoParentRef = useRef();
@@ -54,6 +54,7 @@ export function MutedVideo() {
       playsinline
       preload="metadata">
       style="
+          object-fit:cover;
           position: absolute;
           top: 50%;
           left: 50%;
@@ -61,7 +62,6 @@ export function MutedVideo() {
           height: auto;
           min-height: 100%;
           transform: translate(-50%, -50%);
-        "transform: translate(-50%, -50%);
         "
       <source src="${mainVideo}" type="video/mp4" />
       </video>`,
