@@ -35,6 +35,10 @@ interface CreateIntegrationDialogProps {
     label: string;
     channel: ChannelType;
     config: Record<string, string>;
+
+    // recipientEmails?: string;
+    // phoneNumbers?: string;
+    // webhookUrls?: string;
   }) => CreateResult;
 }
 
@@ -81,8 +85,8 @@ export function CreateIntegrationDialog({
   );
   const [label, setLabel] = useState("");
   const [emails, setEmails] = useState("");
-  const [phone, setPhone] = useState("");
-  const [webhookUrl, setWebhookUrl] = useState("");
+  const [phoneNumbers, setPhoneNumbers] = useState("");
+  const [webhookUrls, setwebhookUrls] = useState("");
   const [keys, setKeys] = useState<CreateResult | null>(null);
   const [copiedTest, setCopiedTest] = useState(false);
   const [copiedLive, setCopiedLive] = useState(false);
@@ -92,8 +96,8 @@ export function CreateIntegrationDialog({
     setSelectedChannel(null);
     setLabel("");
     setEmails("");
-    setPhone("");
-    setWebhookUrl("");
+    setPhoneNumbers("");
+    setwebhookUrls("");
     setKeys(null);
     setCopiedTest(false);
     setCopiedLive(false);
@@ -109,18 +113,18 @@ export function CreateIntegrationDialog({
     setStep("config");
   };
 
-  const buildConfig = (): Record<string, string> => {
-    switch (selectedChannel) {
-      case "email":
-        return { emails: emails.trim() };
-      case "whatsapp":
-        return { phone: phone.trim() };
-      case "slack":
-        return { webhookUrl: webhookUrl.trim() };
-      default:
-        return {};
-    }
-  };
+  // const buildConfig = (): Record<string, string> => {
+  //   switch (selectedChannel) {
+  //     case "email":
+  //       return { emails: emails.trim() };
+  //     case "whatsapp":
+  //       return { phoneNumbers: phoneNumbers.trim() };
+  //     case "slack":
+  //       return { webhookUrls: webhookUrls.trim() };
+  //     default:
+  //       return {};
+  //   }
+  // };
 
   const isConfigValid = () => {
     if (!label.trim()) return false;
@@ -128,20 +132,25 @@ export function CreateIntegrationDialog({
       case "email":
         return emails.trim().length > 0;
       case "whatsapp":
-        return phone.trim().length > 0;
+        return phoneNumbers.trim().length > 0;
       case "slack":
-        return webhookUrl.trim().length > 0;
+        return webhookUrls.trim().length > 0;
       default:
         return false;
     }
   };
 
-  const handleCreate = () => {
-    const result = onCreated({
+  const handleCreate = async () => {
+    const result = await onCreated({
       label: label.trim(),
       channel: selectedChannel!,
-      config: buildConfig(),
+      config: {
+        recipientEmails: emails,
+        phoneNumbers: phoneNumbers,
+        webhookUrls: webhookUrls,
+      },
     });
+    console.log("result:", result);
     setKeys(result);
     setStep("done");
   };
@@ -252,13 +261,13 @@ export function CreateIntegrationDialog({
               )}
               {selectedChannel === "whatsapp" && (
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone number</Label>
+                  <Label htmlFor="PhoneNumbers">PhoneNumbers number</Label>
                   <Input
-                    id="phone"
+                    id="PhoneNumbers"
                     type="tel"
                     placeholder="+1 234 567 8900"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    value={phoneNumbers}
+                    onChange={(e) => setPhoneNumbers(e.target.value)}
                   />
                   <p className="text-xs text-muted-foreground">
                     Include country code. WhatsApp Business required.
@@ -271,8 +280,8 @@ export function CreateIntegrationDialog({
                   <Input
                     id="webhook"
                     placeholder="https://hooks.slack.com/services/..."
-                    value={webhookUrl}
-                    onChange={(e) => setWebhookUrl(e.target.value)}
+                    value={webhookUrls}
+                    onChange={(e) => setwebhookUrls(e.target.value)}
                   />
                   <p className="text-xs text-muted-foreground">
                     Create an incoming webhook in your Slack workspace settings.

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { integrationService } from "@/api/integrationService";
+import { integrationService } from "@/services/integrationService";
 import { dateFormat } from "@/lib/utils";
+import { toRoutePayload } from "@/services/integrations/utils";
 
 interface RouteIntegration {
   id: string;
@@ -14,11 +15,13 @@ interface RouteIntegration {
     id: string;
     prefix: string;
     lastUsed: string;
+    full?: string;
   };
   testKey: {
     id: string;
     prefix: string;
     lastUsed: string;
+    full?: string; // only present during create
   };
   messageCount: number;
   createdAt: string;
@@ -62,12 +65,14 @@ function normalizeRouteIntegration(route: any): RouteIntegration {
           id: route.apiKeys.live.uid ?? String(route.apiKeys.live.id),
           prefix: route.apiKeys.live.prefix,
           lastUsed: dateFormat(route.apiKeys.live.lastUsedAt),
+          full: route.apiKeys.live.key,
         }
       : undefined,
     testKey: {
       id: route.apiKeys?.test.id,
       prefix: route.apiKeys?.test.prefix,
       lastUsed: dateFormat(route.apiKeys?.test.lastUsedAt),
+      full: route.apiKeys.test.key,
     },
     messageCount:
       route.apiKeys?.test?.usageCount + route.apiKeys?.live?.usageCount || 0,
@@ -76,31 +81,29 @@ function normalizeRouteIntegration(route: any): RouteIntegration {
   };
 }
 
-interface RouteIntegrationPayload {
-  label?: string;
-  channel?: string;
-  isActive?: boolean;
-  recipientEmails?: string[];
-}
+// /**
+//  *
+//  * @param input payload to upload the value that change
+//  * @returns valid pattern suitable for backend
+//  */
+// function toRoutePayload(input: RouteIntegrationPayload) {
+//   const payload =  {
+//     label: input.label,
+//     channel: input.channel,
+//     isActive: input.isActive,
+//     // config: {
+//     //   recipientEmails: input.recipientEmails ?? [],
+//     // },
+//     ...(input.recipientEmails !== undefined
+//     ?  { config: { recipientEmails: input.recipientEmails } }
+//     : {})
+//   };
 
-/**
- *
- * @param input payload to upload the value that change
- * @returns valid pattern suitable for backend
- */
-function toRoutePayload(input: RouteIntegrationPayload) {
-  return {
-    label: input.label,
-    channel: input.channel,
-    isActive: input.isActive,
-    config: {
-      recipientEmails: input.recipientEmails ?? [],
-    },
-  };
-}
+
+//   return payload
+// }
 
 const IntegrationContext = createContext<RouteIntegration[]>([]);
-
 
 function useIntegrations() {
   const [routes, setRoutes] = useState<RouteIntegration[]>([]);
@@ -127,11 +130,22 @@ function useIntegrations() {
   const createIntegration = async (input: {
     label: string;
     channel: string;
-    recipientEmails: string[];
+    recipientEmails?: string;
+    phoneNumbers?: string;
+    webhookUrls?: string;
   }) => {
     const payload = toRoutePayload(input);
+    console.log( `updates: ${JSON.stringify(input)}`);
+    console.log(`payload: ${JSON.stringify(payload)}`);
     const res = await integrationService.create(payload);
-    setRoutes((prev) => [normalizeRouteIntegration(res), ...prev]);
+    const integration = normalizeRouteIntegration(res);
+    setRoutes((prev) => [integration, ...prev]);
+    console.log(`createIntegration: ${JSON.stringify(integration)}`);
+
+    //testKey: { prefix: "ib_test_", full: testFull, lastUsed: "Never" },
+    // liveKey: { prefix: "ib_live_", full: liveFull, lastUsed: "Never" },
+    //{ testKey: testFull, liveKey: liveFull }
+    return integration ;
   };
 
   // ✅ UPDATE (PATCH)
@@ -140,18 +154,24 @@ function useIntegrations() {
     updates: Partial<{
       label?: string;
       channel?: string;
-      recipientEmails?: string[];
+      recipientEmails?: string;
+      phoneNumbers?:string;
+      webhookUrls?:string;
       isActive?: boolean;
     }>,
   ) => {
     const payload = toRoutePayload({
       label: updates.label,
       channel: updates.channel, // or keep existing
-      recipientEmails: updates.recipientEmails ?? [],
       
+      // build config
+      recipientEmails: updates.recipientEmails ,
+      phoneNumbers:updates.phoneNumbers,
+      webhookUrls:updates.webhookUrls,
+
       isActive: updates.isActive,
     });
-    console.log('payload:', `payload: ${JSON.stringify(payload)}`)
+
     const res = await integrationService.update(id, payload);
 
     setRoutes((prev) =>

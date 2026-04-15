@@ -164,7 +164,7 @@ export function IntegrationCard({
         return `${list[0]} +${list.length - 1} more`;
       }
       case "whatsapp":
-        return config.phone || "—";
+        return config.phoneNumbers || "—";
       case "slack":
         return config.webhookUrl ? "Webhook configured" : "—";
     }

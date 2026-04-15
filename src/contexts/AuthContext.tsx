@@ -7,7 +7,7 @@ import {
   ReactNode,
 } from "react";
 import { useNavigate } from "react-router-dom";
-import apiClient from "@/api/client";
+import apiClient from "@/services/client";
 
 export interface User {
   id: string;

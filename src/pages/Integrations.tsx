@@ -57,7 +57,7 @@ const initialRoutes: RouteIntegration[] = [
     id: "4",
     label: "WhatsApp Orders",
     channel: "whatsapp",
-    config: { phone: "+1 234 567 8900" },
+    config: { phoneNumbers: "+1 234 567 8900" },
     testKey: { prefix: "ib_test_", full: "ib_test_g3h4i5j6k7l8m9n0o1p2q3r4s5t6u7v8", lastUsed: "3 days ago" },
     liveKey: { prefix: "ib_live_", full: "ib_live_w9x0y1z2a3b4c5d6e7f8g9h0i1j2k3l4", lastUsed: "Never" },
     status: "inactive",
@@ -82,7 +82,7 @@ const channelOptions = [
 
 
 export default function Integrations() {
-  const { routes, loading, setLoading, updateIntegration } =
+  const { routes, loading, setLoading, createIntegration, updateIntegration } =
     useIntegrationContext();
   // const [routes, setRoutes] = useState(integrations);
   const [searchQuery, setSearchQuery] = useState("");
@@ -105,34 +105,74 @@ export default function Integrations() {
     });
   }, [routes, searchQuery, statusFilter, channelFilter]);
 
-  const handleCreate = (data: { label: string; channel: ChannelType; config: Record<string, string> }) => {
-    const id = String(Date.now());
-    const testFull = generateKey("ib_test_");
-    const liveFull = generateKey("ib_live_");
+  // const handleCreate = (data: { label: string; channel: ChannelType; config: Record<string, string> }) => {
+  //   const id = String(Date.now());
+  //   const testFull = generateKey("ib_test_");
+  //   const liveFull = generateKey("ib_live_");
 
-    const newRoute: RouteIntegration = {
-      id,
-      label: data.label,
-      channel: data.channel,
-      config: data.config,
-      testKey: { prefix: "ib_test_", full: testFull, lastUsed: "Never" },
-      liveKey: { prefix: "ib_live_", full: liveFull, lastUsed: "Never" },
-      status: "active",
-      messageCount: 0,
-      createdAt: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-    };
+  //   const newRoute: RouteIntegration = {
+  //     id,
+  //     label: data.label,
+  //     channel: data.channel,
+  //     config: data.config,
+  //     testKey: { prefix: "ib_test_", full: testFull, lastUsed: "Never" },
+  //     liveKey: { prefix: "ib_live_", full: liveFull, lastUsed: "Never" },
+  //     status: "active",
+  //     messageCount: 0,
+  //     createdAt: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+  //   };
 
-    setRoutes((prev) => [newRoute, ...prev]);
-    toast({ title: "Route created", description: `${data.label} is ready to use.` });
-    return { testKey: testFull, liveKey: liveFull };
+  //   setRoutes((prev) => [newRoute, ...prev]);
+  //   toast({ title: "Route created", description: `${data.label} is ready to use.` });
+  //   return { testKey: testFull, liveKey: liveFull };
+  // };
+
+  const handleCreate = async (data:{label:string, channel:ChannelType, config: Record<string, string>}) => {
+    try{
+      const res = await createIntegration({ label:data.label, channel:data.channel, ...data.config });
+      toast({ title: "Route created", description: `${data.label} is ready to use.` });
+      console.log(`integration component ${data.label} ${data.channel} ${JSON.stringify(data.config)}`)
+      console.log("createIntegration:",res)
+      
+      return {
+        testKey: res.testKey.full,
+        liveKey: res.liveKey.full,
+      };
+    } catch (error) {
+      console.error("Error creating route:", error);
+      toast({ title: "Error creating route", description: error.message || "Please try again." });
+    }
+  }
+
+  // update label, config
+  const handleSaveEdit = (id: string, label: string, channel:string, config: Record<string, string>) => {
+    setLoading(false)
+    try{
+      console.log(`config: ${JSON.stringify(config)}`)
+      updateIntegration(id, { label, channel, ...config  });
+
+      toast({ title: "Route updated" });
+    } catch (error) {
+      console.error("Error updating route:", error);
+      toast({ title: "Error updating route", description: error.message || "Please try again." });
+    } finally{
+      setLoading(false)
+    }
   };
 
+
   const handleToggle = (id: string) => {
- 
-    updateIntegration(id, {
-      isActive: r.status === "active" ? (true as const) : (false as const),
-    });
-    toast({ title: "Status updated" })
+    const r = routes.filter(r=>r.id=== id ).pop()
+  
+    try{
+      updateIntegration(id, {
+        isActive: r.status !== "active" 
+      });
+      toast({ title: "Status updated" })
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast({ title: "Error updating status", description: error.message || "Please try again." });
+    }
   };
 
   const handleDelete = (id: string) => {
@@ -165,23 +205,6 @@ export default function Integrations() {
   const handleEdit = (id: string) => {
     const route = routes.find((r) => r.id === id);
     if (route) setEditingRoute(route);
-  };
-
-  // update label, config
-  const handleSaveEdit = (id: string, label: string, config: Record<string, string[]>) => {
-    setLoading(false)
-    try{
-      console.log('email:', `config: ${JSON.stringify(config)}`)
-      updateIntegration(id, { label, ...config  });
-    
-      toast({ title: "Route updated" });
-    } catch (error) {
-      console.error("Error updating route:", error);
-      toast({ title: "Error updating route", description: error.message || "Please try again." });
-    } finally{
-      setLoading(false)
-    }
-    
   };
 
   const handleShowSnippet = (id: string) => {
