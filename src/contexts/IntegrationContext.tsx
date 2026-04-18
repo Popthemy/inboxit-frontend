@@ -1,32 +1,32 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { integrationService } from "@/services/integrationService";
+import { apikeyService } from "@/services/apikeyService";
 import { dateFormat } from "@/lib/utils";
 import { toRoutePayload } from "@/services/integrations/utils";
+import { ApiKey, RawApiKey,RouteIntegration } from "@/services/integrations/type";
 
-interface RouteIntegration {
-  id: string;
-  label: string;
-  channel: string;
-  status: "active" | "inactive" | "archived" | "deleted";
-  config: {
-    recipientEmails: string[];
+
+const normalizeApiKey = (key?: RawApiKey): ApiKey | undefined => {
+  if (!key) return undefined;
+
+  const status: "active" | "inactive" =
+    key.isActive && !key.isRevoked ? "active" : "inactive";
+
+  return {
+    id: key.id ?? (key.uid ? String(key.uid) : ""),
+    prefix: key.prefix ?? "",
+    lastUsed: key.lastUsedAt
+      ? dateFormat(key.lastUsedAt)
+      : "Never",
+    full: key.key,
+    isActive: status,
+    env: key.envChoice ?? "test",
+    usageCount: key.usageCount ?? 0,
+    createdAt: key.createdAt
+      ? dateFormat(key.createdAt)
+      : "",
   };
-  liveKey?: {
-    id: string;
-    prefix: string;
-    lastUsed: string;
-    full?: string;
-  };
-  testKey: {
-    id: string;
-    prefix: string;
-    lastUsed: string;
-    full?: string; // only present during create
-  };
-  messageCount: number;
-  createdAt: string;
-  deletedAt?: string;
-}
+};
 
 function normalizeRouteIntegration(route: any): RouteIntegration {
   const id = route.id ?? String(route.uid);
@@ -60,20 +60,8 @@ function normalizeRouteIntegration(route: any): RouteIntegration {
 
     config: { recipientEmails },
 
-    liveKey: route.apiKeys?.live
-      ? {
-          id: route.apiKeys.live.uid ?? String(route.apiKeys.live.id),
-          prefix: route.apiKeys.live.prefix,
-          lastUsed: dateFormat(route.apiKeys.live.lastUsedAt),
-          full: route.apiKeys.live.key,
-        }
-      : undefined,
-    testKey: {
-      id: route.apiKeys?.test.id,
-      prefix: route.apiKeys?.test.prefix,
-      lastUsed: dateFormat(route.apiKeys?.test.lastUsedAt),
-      full: route.apiKeys.test.key,
-    },
+    liveKey: normalizeApiKey(route.apiKeys?.live ),
+    testKey: normalizeApiKey(route.apiKeys?.test),
     messageCount:
       route.apiKeys?.test?.usageCount + route.apiKeys?.live?.usageCount || 0,
     createdAt: new Date(route.createdAt).toLocaleDateString("en-US",{"day":"numeric","month":"long", "year":"numeric"}),
@@ -81,29 +69,39 @@ function normalizeRouteIntegration(route: any): RouteIntegration {
   };
 }
 
-// /**
-//  *
-//  * @param input payload to upload the value that change
-//  * @returns valid pattern suitable for backend
-//  */
-// function toRoutePayload(input: RouteIntegrationPayload) {
-//   const payload =  {
-//     label: input.label,
-//     channel: input.channel,
-//     isActive: input.isActive,
-//     // config: {
-//     //   recipientEmails: input.recipientEmails ?? [],
-//     // },
-//     ...(input.recipientEmails !== undefined
-//     ?  { config: { recipientEmails: input.recipientEmails } }
-//     : {})
-//   };
+type IntegrationContextType = {
+  routes: RouteIntegration[];
+  setRoutes: React.Dispatch<React.SetStateAction<RouteIntegration[]>>;
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  loading: boolean;
 
+  fetchIntegrations: () => Promise<void>;
+  createIntegration: (input: {
+    label: string;
+    channel: string;
+    recipientEmails?: string;
+    phoneNumbers?: string;
+    webhookUrls?: string;
+  }) => Promise<RouteIntegration>;
 
-//   return payload
-// }
+  updateIntegration: (
+    id: string,
+    updates: Partial<{
+      label?: string;
+      channel?: string;
+      recipientEmails?: string;
+      phoneNumbers?: string;
+      webhookUrls?: string;
+      isActive?: boolean;
+    }>,
+  ) => Promise<void>;
 
-const IntegrationContext = createContext<RouteIntegration[]>([]);
+  deleteIntegration: (id: string) => Promise<void>;
+  getIntegration: (id: string) => Promise<RouteIntegration>;
+  regenerateApiKey: (id: string, env: string) => Promise<ApiKey>;
+};
+
+const IntegrationContext = createContext<IntegrationContextType | null>(null);
 
 function useIntegrations() {
   const [routes, setRoutes] = useState<RouteIntegration[]>([]);
@@ -119,6 +117,7 @@ function useIntegrations() {
       
       // setRoutes(data.results.map(route=> normalizeRouteIntegration(route)));
       const result = data.results.map(route=> normalizeRouteIntegration(route))
+      console.log(result)
       setRoutes(result)
 
     } finally {
@@ -193,6 +192,28 @@ function useIntegrations() {
     return normalizeRouteIntegration(res);
   };
 
+
+  const regenerateApiKey = async (id:string,env : string):Promise<ApiKey> =>{
+    const res = await apikeyService.regenerate(id);
+    console.error("updated integration key....:", res.data?.[env])
+    const updatedApikey = normalizeApiKey(res.data?.[env]);
+
+    console.log("updated integration key:", updatedApikey)
+    return updatedApikey;
+
+    // setRoutes((prev) =>
+    //   prev.map((r) => {
+    //     if (r.id !== id) return r;
+    //     const keyField = env === "live" ? "liveKey" : "testKey";
+    //     return {
+    //       ...r,
+    //       [keyField]: { prefix, full: newKey, lastUsed: "Never" },
+    //     };
+    //   }),
+    // );
+
+  }
+
   useEffect(() => {
     fetchIntegrations();
   }, []);
@@ -208,6 +229,7 @@ function useIntegrations() {
     updateIntegration,
     deleteIntegration,
     getIntegration,
+    regenerateApiKey,
   };
 }
 

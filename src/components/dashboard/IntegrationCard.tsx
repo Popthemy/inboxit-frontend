@@ -25,27 +25,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { StatusBadge } from "./StatusBadge";
 import { CopyButton } from "./CopyButton";
+import { type ApiKey as RouteKey, type RouteIntegration, type ChannelType } from "@/services/integrations/type";
 
-export type ChannelType = "email" | "whatsapp" | "slack";
-
-export interface RouteKey {
-  prefix: string;
-  full: string;
-  lastUsed: string;
-}
-
-export interface RouteIntegration {
-  id: string;
-  label: string;
-  channel: ChannelType;
-  config: Record<string, string>;
-  testKey: RouteKey;
-  liveKey: RouteKey;
-  status: "active" | "inactive";
-  messageCount: number;
-  createdAt: string;
-  deletedAt?: string | null;
-}
 
 interface IntegrationCardProps extends RouteIntegration {
   delay?: number;
@@ -250,14 +231,14 @@ export function IntegrationCard({
               <KeyRow
                 env="test"
                 keyData={testKey}
-                onRegenerate={() => onRegenerateKey?.(id, "test")}
+                onRegenerate={() => onRegenerateKey?.(testKey?.id, "test")}
               />
             )}
             {liveKey && (
               <KeyRow
                 env="live"
                 keyData={liveKey}
-                onRegenerate={() => onRegenerateKey?.(id, "live")}
+                onRegenerate={() => onRegenerateKey?.(liveKey?.id, "live")}
               />
             )}
           </div>

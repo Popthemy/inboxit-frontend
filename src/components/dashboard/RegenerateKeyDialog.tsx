@@ -16,7 +16,7 @@ interface RegenerateKeyDialogProps {
   onOpenChange: (open: boolean) => void;
   env: "test" | "live";
   routeLabel: string;
-  onConfirm: () => string; // returns the new raw key
+  onConfirm: () => Promise<string>; // returns the new raw key
 }
 
 export function RegenerateKeyDialog({
@@ -42,8 +42,13 @@ export function RegenerateKeyDialog({
     onOpenChange(val);
   };
 
-  const handleRegenerate = () => {
-    const key = onConfirm();
+  const handleRegenerate = async() => {
+    const key = await onConfirm();
+    console.error("handle regenerate!......", key)
+    if(!key){
+      setNewKey("⚠️ Key regenerated but not retrievable");
+      return;
+    }
     setNewKey(key);
     setStep("done");
   };
@@ -71,7 +76,7 @@ export function RegenerateKeyDialog({
                   Regenerate {envLabel} API Key?
                 </DialogTitle>
                 <DialogDescription>
-                  This will immediately deactivate the current{" "}
+                  This will immediately deactivate the current {' '}
                   {envLabel.toLowerCase()} key for <strong>{routeLabel}</strong>
                   . Any integrations using it will stop working.
                 </DialogDescription>

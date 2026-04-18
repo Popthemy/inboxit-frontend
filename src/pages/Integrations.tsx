@@ -4,19 +4,27 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SearchBar } from "@/components/dashboard/SearchBar";
 import { FilterDropdown } from "@/components/dashboard/FilterDropdown";
-import { IntegrationCard, type RouteIntegration, type ChannelType } from "@/components/dashboard/IntegrationCard";
+import {
+  IntegrationCard,
+} from "@/components/dashboard/IntegrationCard";
 import { CreateIntegrationDialog } from "@/components/dashboard/CreateIntegrationDialog";
 import { EditIntegrationDialog } from "@/components/dashboard/EditIntegrationDialog";
 import { RegenerateKeyDialog } from "@/components/dashboard/RegenerateKeyDialog";
 import { IntegrationSnippetDialog } from "@/components/dashboard/IntegrationSnippetDialog";
 import { useToast } from "@/hooks/use-toast";
 import { useIntegrationContext } from "@/contexts/IntegrationContext";
+import { type ChannelType, type RouteIntegration } from "@/services/integrations/type";
 
 
 function generateKey(prefix: string) {
-  return prefix + Array.from({ length: 32 }, () =>
-    "abcdefghijklmnopqrstuvwxyz0123456789"[Math.floor(Math.random() * 36)]
-  ).join("");
+  return (
+    prefix +
+    Array.from(
+      { length: 32 },
+      () =>
+        "abcdefghijklmnopqrstuvwxyz0123456789"[Math.floor(Math.random() * 36)],
+    ).join("")
+  );
 }
 
 const initialRoutes: RouteIntegration[] = [
@@ -25,8 +33,16 @@ const initialRoutes: RouteIntegration[] = [
     label: "Contact Form",
     channel: "email",
     config: { emails: "support@company.com\nsales@company.com" },
-    testKey: { prefix: "ib_test_", full: "ib_test_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6", lastUsed: "5 min ago" },
-    liveKey: { prefix: "ib_live_", full: "ib_live_q7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f2", lastUsed: "2 hours ago" },
+    testKey: {
+      prefix: "ib_test_",
+      full: "ib_test_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
+      lastUsed: "5 min ago",
+    },
+    liveKey: {
+      prefix: "ib_live_",
+      full: "ib_live_q7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f2",
+      lastUsed: "2 hours ago",
+    },
     status: "active",
     messageCount: 4523,
     createdAt: "Jan 15, 2026",
@@ -36,8 +52,16 @@ const initialRoutes: RouteIntegration[] = [
     label: "Newsletter Signup",
     channel: "email",
     config: { emails: "newsletter@company.com" },
-    testKey: { prefix: "ib_test_", full: "ib_test_x1y2z3a4b5c6d7e8f9g0h1i2j3k4l5m6", lastUsed: "1 day ago" },
-    liveKey: { prefix: "ib_live_", full: "ib_live_n7o8p9q0r1s2t3u4v5w6x7y8z9a0b1c2", lastUsed: "5 min ago" },
+    testKey: {
+      prefix: "ib_test_",
+      full: "ib_test_x1y2z3a4b5c6d7e8f9g0h1i2j3k4l5m6",
+      lastUsed: "1 day ago",
+    },
+    liveKey: {
+      prefix: "ib_live_",
+      full: "ib_live_n7o8p9q0r1s2t3u4v5w6x7y8z9a0b1c2",
+      lastUsed: "5 min ago",
+    },
     status: "active",
     messageCount: 12847,
     createdAt: "Feb 3, 2026",
@@ -47,8 +71,16 @@ const initialRoutes: RouteIntegration[] = [
     label: "Sales Alerts",
     channel: "slack",
     config: { webhookUrl: "https://hooks.slack.com/services/T00/B00/xxxx" },
-    testKey: { prefix: "ib_test_", full: "ib_test_s5t6u7v8w9x0y1z2a3b4c5d6e7f8g9h0", lastUsed: "Never" },
-    liveKey: { prefix: "ib_live_", full: "ib_live_i1j2k3l4m5n6o7p8q9r0s1t2u3v4w5x6", lastUsed: "1 day ago" },
+    testKey: {
+      prefix: "ib_test_",
+      full: "ib_test_s5t6u7v8w9x0y1z2a3b4c5d6e7f8g9h0",
+      lastUsed: "Never",
+    },
+    liveKey: {
+      prefix: "ib_live_",
+      full: "ib_live_i1j2k3l4m5n6o7p8q9r0s1t2u3v4w5x6",
+      lastUsed: "1 day ago",
+    },
     status: "active",
     messageCount: 892,
     createdAt: "Feb 20, 2026",
@@ -58,8 +90,16 @@ const initialRoutes: RouteIntegration[] = [
     label: "WhatsApp Orders",
     channel: "whatsapp",
     config: { phoneNumbers: "+1 234 567 8900" },
-    testKey: { prefix: "ib_test_", full: "ib_test_g3h4i5j6k7l8m9n0o1p2q3r4s5t6u7v8", lastUsed: "3 days ago" },
-    liveKey: { prefix: "ib_live_", full: "ib_live_w9x0y1z2a3b4c5d6e7f8g9h0i1j2k3l4", lastUsed: "Never" },
+    testKey: {
+      prefix: "ib_test_",
+      full: "ib_test_g3h4i5j6k7l8m9n0o1p2q3r4s5t6u7v8",
+      lastUsed: "3 days ago",
+    },
+    liveKey: {
+      prefix: "ib_live_",
+      full: "ib_live_w9x0y1z2a3b4c5d6e7f8g9h0i1j2k3l4",
+      lastUsed: "Never",
+    },
     status: "inactive",
     messageCount: 124,
     createdAt: "Mar 1, 2026",
@@ -80,126 +120,161 @@ const channelOptions = [
   { value: "slack", label: "Slack" },
 ];
 
-
 export default function Integrations() {
-  const { routes, loading, setLoading, createIntegration, updateIntegration } =
-    useIntegrationContext();
+  const {
+    routes,
+    loading,
+    setLoading,
+    createIntegration,
+    updateIntegration,
+    regenerateApiKey,
+  } = useIntegrationContext();
   // const [routes, setRoutes] = useState(integrations);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [channelFilter, setChannelFilter] = useState("all");
   const [showCreate, setShowCreate] = useState(false);
-  const [editingRoute, setEditingRoute] = useState<RouteIntegration | null>(null);
-  const [regenState, setRegenState] = useState<{ routeId: string; env: "test" | "live" } | null>(null);
-  const [snippetRoute, setSnippetRoute] = useState<RouteIntegration | null>(null);
+  const [editingRoute, setEditingRoute] = useState<RouteIntegration | null>(
+    null,
+  );
+
+  const [regenState, setRegenState] = useState<{
+    apikeyId: string;
+    env: "test" | "live";
+  } | null>(null);
+
+  const [snippetRoute, setSnippetRoute] = useState<RouteIntegration | null>(
+    null,
+  );
   const { toast } = useToast();
 
   const filtered = useMemo(() => {
     return routes.filter((r) => {
       if (r.deletedAt && statusFilter !== "archived") return false;
       const q = searchQuery.toLowerCase();
-      const matchesSearch = !q || r.label.toLowerCase().includes(q) || r.channel.includes(q);
-      const matchesStatus = statusFilter === "all" || statusFilter === "archived" ? true : r.status === statusFilter;
-      const matchesChannel = channelFilter === "all" || r.channel === channelFilter;
+      const matchesSearch =
+        !q || r.label.toLowerCase().includes(q) || r.channel.includes(q);
+      const matchesStatus =
+        statusFilter === "all" || statusFilter === "archived"
+          ? true
+          : r.status === statusFilter;
+      const matchesChannel =
+        channelFilter === "all" || r.channel === channelFilter;
       return matchesSearch && matchesStatus && matchesChannel;
     });
   }, [routes, searchQuery, statusFilter, channelFilter]);
 
-  // const handleCreate = (data: { label: string; channel: ChannelType; config: Record<string, string> }) => {
-  //   const id = String(Date.now());
-  //   const testFull = generateKey("ib_test_");
-  //   const liveFull = generateKey("ib_live_");
+  const handleCreate = async (data: {
+    label: string;
+    channel: ChannelType;
+    config: Record<string, string>;
+  }) => {
+    try {
+      const res = await createIntegration({
+        label: data.label,
+        channel: data.channel,
+        ...data.config,
+      });
+      toast({
+        title: "Route created",
+        description: `${data.label} is ready to use.`,
+      });
+      console.log(
+        `integration component ${data.label} ${data.channel} ${JSON.stringify(data.config)}`,
+      );
+      console.log("createIntegration:", res);
 
-  //   const newRoute: RouteIntegration = {
-  //     id,
-  //     label: data.label,
-  //     channel: data.channel,
-  //     config: data.config,
-  //     testKey: { prefix: "ib_test_", full: testFull, lastUsed: "Never" },
-  //     liveKey: { prefix: "ib_live_", full: liveFull, lastUsed: "Never" },
-  //     status: "active",
-  //     messageCount: 0,
-  //     createdAt: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-  //   };
-
-  //   setRoutes((prev) => [newRoute, ...prev]);
-  //   toast({ title: "Route created", description: `${data.label} is ready to use.` });
-  //   return { testKey: testFull, liveKey: liveFull };
-  // };
-
-  const handleCreate = async (data:{label:string, channel:ChannelType, config: Record<string, string>}) => {
-    try{
-      const res = await createIntegration({ label:data.label, channel:data.channel, ...data.config });
-      toast({ title: "Route created", description: `${data.label} is ready to use.` });
-      console.log(`integration component ${data.label} ${data.channel} ${JSON.stringify(data.config)}`)
-      console.log("createIntegration:",res)
-      
       return {
         testKey: res.testKey.full,
         liveKey: res.liveKey.full,
       };
     } catch (error) {
       console.error("Error creating route:", error);
-      toast({ title: "Error creating route", description: error.message || "Please try again." });
+      toast({
+        title: "Error creating route",
+        description: error.message || "Please try again.",
+      });
     }
-  }
+  };
 
   // update label, config
-  const handleSaveEdit = (id: string, label: string, channel:string, config: Record<string, string>) => {
-    setLoading(false)
-    try{
-      console.log(`config: ${JSON.stringify(config)}`)
-      updateIntegration(id, { label, channel, ...config  });
+  const handleSaveEdit = (
+    id: string,
+    label: string,
+    channel: string,
+    config: Record<string, string>,
+  ) => {
+    setLoading(false);
+    try {
+      console.log(`config: ${JSON.stringify(config)}`);
+      updateIntegration(id, { label, channel, ...config });
 
       toast({ title: "Route updated" });
     } catch (error) {
       console.error("Error updating route:", error);
-      toast({ title: "Error updating route", description: error.message || "Please try again." });
-    } finally{
-      setLoading(false)
+      toast({
+        title: "Error updating route",
+        description: error.message || "Please try again.",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-
   const handleToggle = (id: string) => {
-    const r = routes.filter(r=>r.id=== id ).pop()
-  
-    try{
+    const r = routes.filter((r) => r.id === id).pop();
+
+    try {
       updateIntegration(id, {
-        isActive: r.status !== "active" 
+        isActive: r.status !== "active",
       });
-      toast({ title: "Status updated" })
+      toast({ title: "Status updated" });
     } catch (error) {
       console.error("Error updating status:", error);
-      toast({ title: "Error updating status", description: error.message || "Please try again." });
+      toast({
+        title: "Error updating status",
+        description: error.message || "Please try again.",
+      });
     }
   };
 
   const handleDelete = (id: string) => {
-
-    toast({ title: "Route archived", description: "The route has been soft-deleted and can be restored." });
+    toast({
+      title: "Route archived",
+      description: "The route has been soft-deleted and can be restored.",
+    });
   };
 
   const handleRegenerateKey = (id: string, env: "test" | "live") => {
-    setRegenState({ routeId: id, env });
+    setRegenState({ apikeyId: id, env });
   };
 
-  const confirmRegenerate = (): string => {
+  const confirmRegenerate = async ()=>{
+    console.log("calling confirm");
+
     if (!regenState) return "";
-    const { routeId, env } = regenState;
-    const prefix = env === "live" ? "ib_live_" : "ib_test_";
-    const newKey = generateKey(prefix);
+    const { apikeyId, env } = regenState;
 
-    setRoutes((prev) =>
-      prev.map((r) => {
-        if (r.id !== routeId) return r;
-        const keyField = env === "live" ? "liveKey" : "testKey";
-        return { ...r, [keyField]: { prefix, full: newKey, lastUsed: "Never" } };
-      })
-    );
+    try {
+      const newKey = await regenerateApiKey(apikeyId, env);
+      if (!newKey?.full) {
+        toast({ title: "Key regenerated, but no key returned" });
+        return "";
+      }
 
-    toast({ title: `${env === "live" ? "Live" : "Test"} key regenerated` });
-    return newKey;
+      toast({ title: `${env === "live" ? "Live" : "Test"} key regenerated` });
+      return newKey.full;
+    } catch (error) {
+      if (error.response?.status === 404) {
+        toast({ title: `API key not found ${error.detail}` });
+      } else {
+        console.log(error.response.data)
+        toast({ title: `Something went wrong ${error.response?.data?.message}` });
+
+      }
+    }
+    return "";
+    // const newKey = generateKey(prefix);
   };
 
   const handleEdit = (id: string) => {
@@ -212,7 +287,9 @@ export default function Integrations() {
     if (route) setSnippetRoute(route);
   };
 
-  const regenRoute = regenState ? routes.find((r) => r.id === regenState.routeId) : null;
+  const regenRoute = regenState
+    ? routes.find((r) => r.id === regenState.apikeyId)
+    : null;
 
   return (
     <div className="space-y-6">
@@ -241,8 +318,18 @@ export default function Integrations() {
           className="flex-1"
         />
         <div className="flex gap-2">
-          <FilterDropdown placeholder="Status" value={statusFilter} onValueChange={setStatusFilter} options={statusOptions} />
-          <FilterDropdown placeholder="Channel" value={channelFilter} onValueChange={setChannelFilter} options={channelOptions} />
+          <FilterDropdown
+            placeholder="Status"
+            value={statusFilter}
+            onValueChange={setStatusFilter}
+            options={statusOptions}
+          />
+          <FilterDropdown
+            placeholder="Channel"
+            value={channelFilter}
+            onValueChange={setChannelFilter}
+            options={channelOptions}
+          />
         </div>
       </div>
 
@@ -250,7 +337,9 @@ export default function Integrations() {
       {filtered.length === 0 ? (
         <div className="text-center py-16">
           <p className="text-lg font-medium text-foreground">No routes found</p>
-          <p className="text-sm text-muted-foreground mt-1">Create your first route to get started.</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Create your first route to get started.
+          </p>
           <Button className="mt-4 gap-2" onClick={() => setShowCreate(true)}>
             <Plus className="h-4 w-4" /> New Route
           </Button>
@@ -273,18 +362,26 @@ export default function Integrations() {
       )}
 
       {/* Dialogs */}
-      <CreateIntegrationDialog open={showCreate} onOpenChange={setShowCreate} onCreated={handleCreate} />
+      <CreateIntegrationDialog
+        open={showCreate}
+        onOpenChange={setShowCreate}
+        onCreated={handleCreate}
+      />
 
       <EditIntegrationDialog
         open={!!editingRoute}
-        onOpenChange={(open) => { if (!open) setEditingRoute(null); }}
+        onOpenChange={(open) => {
+          if (!open) setEditingRoute(null);
+        }}
         integration={editingRoute}
         onSave={handleSaveEdit}
       />
 
       <RegenerateKeyDialog
         open={!!regenState}
-        onOpenChange={(open) => { if (!open) setRegenState(null); }}
+        onOpenChange={(open) => {
+          if (!open) setRegenState(null);
+        }}
         env={regenState?.env || "test"}
         routeLabel={regenRoute?.label || ""}
         onConfirm={confirmRegenerate}
@@ -292,7 +389,9 @@ export default function Integrations() {
 
       <IntegrationSnippetDialog
         open={!!snippetRoute}
-        onOpenChange={(open) => { if (!open) setSnippetRoute(null); }}
+        onOpenChange={(open) => {
+          if (!open) setSnippetRoute(null);
+        }}
         route={snippetRoute}
       />
     </div>

@@ -21,7 +21,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import type { ChannelType } from "./IntegrationCard";
+import { type ChannelType } from "@/services/integrations/type";
 
 interface CreateResult {
   testKey: string;
@@ -112,19 +112,6 @@ export function CreateIntegrationDialog({
     setSelectedChannel(ch);
     setStep("config");
   };
-
-  // const buildConfig = (): Record<string, string> => {
-  //   switch (selectedChannel) {
-  //     case "email":
-  //       return { emails: emails.trim() };
-  //     case "whatsapp":
-  //       return { phoneNumbers: phoneNumbers.trim() };
-  //     case "slack":
-  //       return { webhookUrls: webhookUrls.trim() };
-  //     default:
-  //       return {};
-  //   }
-  // };
 
   const isConfigValid = () => {
     if (!label.trim()) return false;
