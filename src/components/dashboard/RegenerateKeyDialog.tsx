@@ -11,6 +11,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
+
 interface RegenerateKeyDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -29,6 +30,7 @@ export function RegenerateKeyDialog({
   const [step, setStep] = useState<"confirm" | "done">("confirm");
   const [newKey, setNewKey] = useState("");
   const [copied, setCopied] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const isLive = env === "live";
   const envLabel = isLive ? "Live" : "Test";
@@ -43,14 +45,20 @@ export function RegenerateKeyDialog({
   };
 
   const handleRegenerate = async() => {
-    const key = await onConfirm();
-    console.error("handle regenerate!......", key)
-    if(!key){
-      setNewKey("⚠️ Key regenerated but not retrievable");
-      return;
+    if (loading) return;
+    setLoading(true)
+    try{
+
+      const key = await onConfirm();
+      if(!key){
+        setNewKey("⚠️ Key regenerated but not retrievable");
+        return;
+      }
+      setNewKey(key);
+      setStep("done");
+    } finally{
+      setLoading(false)
     }
-    setNewKey(key);
-    setStep("done");
   };
 
   const handleCopy = async () => {
@@ -87,9 +95,9 @@ export function RegenerateKeyDialog({
                 </Button>
                 <Button
                   variant={isLive ? "destructive" : "default"}
-                  onClick={handleRegenerate}
+                  onClick={handleRegenerate} disabled={loading}
                 >
-                  Regenerate
+                   {loading ? "Regenerating..." : "Regenerate Key"}
                 </Button>
               </DialogFooter>
             </motion.div>

@@ -5,21 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusBadge } from "./StatusBadge";
 import { CodeBlock } from "./CodeBlock";
+import { NormalizedMessage } from "@/utils/messageNormalizer";
 
 interface MessagePreviewProps {
-  message: {
-    id: string;
-    from: string;
-    to: string;
-    subject: string;
-    body: string;
-    status: "success" | "error" | "pending";
-    apiKeyPrefix: string;
-    date: string;
-    attachments?: string[];
-    imageUrl?: string;
-    rawPayload: Record<string, unknown>;
-  };
+  message: NormalizedMessage;
   onClose: () => void;
 }
 
@@ -55,7 +44,9 @@ export function MessagePreview({ message, onClose }: MessagePreviewProps) {
               </div>
               <div>
                 <span className="text-muted-foreground">To:</span>
-                <p className="font-mono text-xs mt-1">{message.to}</p>
+                <p className="font-mono text-xs mt-1">
+                  {message.to.join(", ")}
+                </p>
               </div>
               <div>
                 <span className="text-muted-foreground">API Key:</span>

@@ -194,7 +194,16 @@ export function TopNav() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          
+
+          {/* Dialog */}
+          {/* <SendTestDialog
+            open={!!testRoute}
+            onOpenChange={(open) => {
+              if (!open) setTestRoute(null);
+            }}
+            route={testRoute?.route || null}
+            defaultEnv={testRoute?.env || "test"}
+          /> */}
         </div>
       </div>
     </header>

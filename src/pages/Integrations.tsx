@@ -250,7 +250,6 @@ export default function Integrations() {
   };
 
   const confirmRegenerate = async ()=>{
-    console.log("calling confirm");
 
     if (!regenState) return "";
     const { apikeyId, env } = regenState;

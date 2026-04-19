@@ -194,23 +194,34 @@ function useIntegrations() {
 
 
   const regenerateApiKey = async (id:string,env : string):Promise<ApiKey> =>{
-    const res = await apikeyService.regenerate(id);
-    console.error("updated integration key....:", res.data?.[env])
-    const updatedApikey = normalizeApiKey(res.data?.[env]);
+    console.log("api key id:", id)
+    if (loading) return
+    setLoading(true)
+    try{
+      
+      const res = await apikeyService.regenerate(id);
+      const updatedApikey = normalizeApiKey(res.data?.[env]);
+  
+      setRoutes((prev) =>
+        prev.map((r) => {
+          const keyField =
+            env === "live" ? "liveKey" : env === "test" ? "testKey" : null;
+          if (!keyField) return r;
+          const existingKey = r[keyField];
+          if (!existingKey || existingKey.id !== id) return r
+          return {
+            ...r,
+            [keyField]: updatedApikey,
+          };
+        }),
+      );
+      return updatedApikey;
+    } catch (error){
+      throw new Error(error)
 
-    console.log("updated integration key:", updatedApikey)
-    return updatedApikey;
-
-    // setRoutes((prev) =>
-    //   prev.map((r) => {
-    //     if (r.id !== id) return r;
-    //     const keyField = env === "live" ? "liveKey" : "testKey";
-    //     return {
-    //       ...r,
-    //       [keyField]: { prefix, full: newKey, lastUsed: "Never" },
-    //     };
-    //   }),
-    // );
+    } finally {
+      setLoading(false)
+    }
 
   }
 
