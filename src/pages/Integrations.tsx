@@ -267,11 +267,12 @@ export default function Integrations() {
       if (error.response?.status === 404) {
         toast({ title: `API key not found ${error.detail}` });
       } else {
-        console.log(error.response.data)
+        console.log(error?.response)
         toast({ title: `Something went wrong ${error.response?.data?.message}` });
 
       }
     }
+
     return "";
     // const newKey = generateKey(prefix);
   };

@@ -1,13 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Send,
-  CheckCircle2,
-  Mail,
-  MessageCircle,
-  Hash,
-  Loader2,
-} from "lucide-react";
+import { Send, CheckCircle2, Mail, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,82 +13,116 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { RouteIntegration, ChannelType } from "./IntegrationCard";
+import type { ApiKey } from "@/services/integrations/type";
 import { useToast } from "@/hooks/use-toast";
 
 interface SendTestDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  route: RouteIntegration | null;
-  defaultEnv?: "test" | "live";
+  apiKey?: ApiKey | null;
 }
 
-const channelMeta: Record<
-  ChannelType,
-  { icon: typeof Mail; label: string; destLabel: string }
-> = {
-  email: { icon: Mail, label: "Email", destLabel: "Recipient email" },
-  whatsapp: {
-    icon: MessageCircle,
-    label: "WhatsApp",
-    destLabel: "Recipient phone",
-  },
-  slack: { icon: Hash, label: "Slack", destLabel: "Webhook URL" },
+const channelMeta = {
+  icon: Mail,
+  label: "Email",
+  destLabel: "Recipient email",
 };
+
+declare global {
+  interface Window {
+    inboxit: any;
+  }
+}
 
 export function SendTestDialog({
   open,
   onOpenChange,
-  route,
-  defaultEnv = "test",
+  apiKey = null,
 }: SendTestDialogProps) {
-  const [env, setEnv] = useState<"test" | "live">(defaultEnv);
-  const [destination, setDestination] = useState("");
-  const [subject, setSubject] = useState("");
-  const [message, setMessage] = useState("");
+  const [manualKey, setManualKey] = useState("");
+  const [subject, setSubject] = useState("Test message from Inboxit");
+  const [message, setMessage] = useState(
+    "This is a test message. If you received this, your integration is working! 🎉",
+  );
   const [step, setStep] = useState<"compose" | "sending" | "sent">("compose");
   const { toast } = useToast();
+  const clientEmail = "cleintbolaji24@gmail.com"
+
+  const activeKeyFull = apiKey?.full || manualKey;
+
+  // Load the Inboxit widget
+  useEffect(() => {
+    if (!window.inboxit) {
+      const script = document.createElement("script");
+      script.src =
+        import.meta.env.VITE_WIDGET_URL ||
+        "https://cdn.inboxit.com/widget/v1/widget.min.js";
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  }, []);
+
+  // Initialize (whenever key changes)
+  useEffect(() => {
+    if (open && window.inboxit && activeKeyFull) {
+      window.inboxit("init", {
+        apiKey: activeKeyFull,
+        subject: subject || "Test message",
+        successMessage:
+            "Test messaged delivered successfully. Check your mail",
+        errorMessage: "Not successfully. Resend or contact support",
+      });
+    }
+  }, [open, activeKeyFull, subject]);
 
   useEffect(() => {
-    if (open && route) {
-      setEnv(defaultEnv);
+    if (open) {
       setStep("compose");
-      setSubject(`Test message from ${route.label}`);
-      setMessage(
-        `This is a test from your "${route.label}" route. If you received this, your integration is working! 🎉`,
-      );
-      // Pre-fill destination from route config
-      switch (route.channel) {
-        case "email":
-          setDestination((route.config.emails || "").split("\n")[0] || "");
-          break;
-        case "whatsapp":
-          setDestination(route.config.phone || "");
-          break;
-        case "slack":
-          setDestination(route.config.webhookUrl || "");
-          break;
-      }
     }
-  }, [open, route, defaultEnv]);
+  }, [open]);
 
-  if (!route) return null;
+  const Icon = channelMeta.icon || Send;
 
-  const meta = channelMeta[route.channel];
-  const Icon = meta.icon;
-  const usingKey = env === "live" ? route.liveKey : route.testKey;
+  const handleSend = async () => {
+    if (!window.inboxit) {
+      toast({
+        title: "Error",
+        description: "Inboxit widget not loaded yet.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-  const handleSend = () => {
+    if (!activeKeyFull) {
+      toast({
+        title: "Error",
+        description: "Please provide an API key.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setStep("sending");
-    // Simulated send
-    setTimeout(() => {
+    try {
+      await window.inboxit("sendEmail", {
+        subject: subject,
+        message: message,
+        email: clientEmail
+      });
+
       setStep("sent");
       toast({
         title: "Test message sent",
-        description: `Delivered to ${destination} via ${meta.label}.`,
+        description: "Delivered to channel.",
       });
-    }, 1200);
+    } catch (error: any) {
+      setStep("compose");
+      toast({
+        title: "Error sending test",
+        description: error.message || "Failed to send test message.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleClose = (val: boolean) => {
@@ -120,71 +147,79 @@ export function SendTestDialog({
                   Send Test Message
                 </DialogTitle>
                 <DialogDescription>
-                  Verify <strong>{route.label}</strong> works end-to-end. This
-                  sends a real test through the {meta.label.toLowerCase()}{" "}
-                  channel.
+                  Verify your integration works end-to-end. This sends a real
+                  test through the Inboxit widget.
                 </DialogDescription>
               </DialogHeader>
 
               <div className="space-y-4 mt-4">
-                {/* Env switcher */}
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">
-                    Environment
-                  </Label>
-                  <Tabs
-                    value={env}
-                    onValueChange={(v) => setEnv(v as "test" | "live")}
-                  >
-                    <TabsList className="grid grid-cols-2 w-full">
-                      <TabsTrigger value="test">🧪 Test Key</TabsTrigger>
-                      <TabsTrigger value="live">🚀 Live Key</TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                  <p className="text-[10px] font-mono text-muted-foreground truncate">
-                    Using: {usingKey.prefix}••••••••
-                  </p>
-                </div>
+                {/* API Key Input (only if not provided via props) */}
+                {!apiKey && (
+                  <div className="space-y-1.5">
+                    <Label
+                      htmlFor="apiKey"
+                      className="text-xs text-muted-foreground"
+                    >
+                      API Key
+                    </Label>
+                    <Input
+                      id="apiKey"
+                      type="text"
+                      placeholder="ii_..."
+                      value={manualKey}
+                      onChange={(e) => setManualKey(e.target.value)}
+                    />
+                    <p className="text-[10px] text-muted-foreground">
+                      Enter the API key you want to test.
+                    </p>
+                  </div>
+                )}
 
-                {/* Destination */}
+                {apiKey && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">
+                      Using API Key
+                    </Label>
+                    <div className="p-2 rounded bg-muted font-mono text-xs truncate">
+                      {apiKey.prefix}••••••••
+                    </div>
+                  </div>
+                )}
+
+                {/* Destination Info */}
                 <div className="space-y-1.5">
                   <Label
                     htmlFor="dest"
                     className="text-xs text-muted-foreground flex items-center gap-1.5"
                   >
                     <Icon className="h-3.5 w-3.5" />
-                    {meta.destLabel}
+                    {channelMeta.destLabel}
                   </Label>
                   <Input
-                    id="dest"
-                    value={destination}
-                    onChange={(e) => setDestination(e.target.value)}
-                    placeholder={
-                      route.channel === "email"
-                        ? "you@example.com"
-                        : route.channel === "whatsapp"
-                          ? "+1 234 567 8900"
-                          : "https://hooks.slack.com/..."
-                    }
+                    id="email"
+                    value={clientEmail}
+                    placeholder={"you@example.com"}
+                    disabled={true}
                   />
+                  <p className="text-[10px] text-muted-foreground">
+                    the reply button on the mail will forward to this client mail.
+                  </p>
                 </div>
 
-                {/* Subject (email only) */}
-                {route.channel === "email" && (
-                  <div className="space-y-1.5">
-                    <Label
-                      htmlFor="subj"
-                      className="text-xs text-muted-foreground"
-                    >
-                      Subject
-                    </Label>
-                    <Input
-                      id="subj"
-                      value={subject}
-                      onChange={(e) => setSubject(e.target.value)}
-                    />
-                  </div>
-                )}
+                {/* Subject */}
+                <div className="space-y-1.5">
+                  <Label
+                    htmlFor="subj"
+                    className="text-xs text-muted-foreground"
+                  >
+                    Subject
+                  </Label>
+                  <Input
+                    id="subj"
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                  />
+                </div>
 
                 {/* Message */}
                 <div className="space-y-1.5">
@@ -214,7 +249,7 @@ export function SendTestDialog({
                 </Button>
                 <Button
                   onClick={handleSend}
-                  disabled={!destination || !message || step === "sending"}
+                  disabled={!activeKeyFull || !message || step === "sending"}
                   className="gap-2"
                 >
                   {step === "sending" ? (
@@ -249,22 +284,7 @@ export function SendTestDialog({
                   Test message delivered!
                 </h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Sent to{" "}
-                  <strong className="text-foreground">{destination}</strong>{" "}
-                  using your {env === "live" ? "live" : "test"} key.
-                </p>
-              </div>
-              <div className="p-3 rounded-lg bg-muted/50 border border-border text-left">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
-                  Preview
-                </p>
-                {route.channel === "email" && (
-                  <p className="text-xs font-medium text-foreground mb-1">
-                    {subject}
-                  </p>
-                )}
-                <p className="text-xs text-muted-foreground line-clamp-3">
-                  {message}
+                  Your API key worked correctly and the message was sent.
                 </p>
               </div>
               <div className="flex gap-2">

@@ -26,6 +26,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { SearchBar } from "@/components/dashboard/SearchBar";
 import { formatDistanceToNow, subMinutes, subHours } from "date-fns";
+import { SendTestDialog } from "@/components/dashboard/SendTestDialog";
 
 const previewNotifications = [
   {
@@ -57,6 +58,7 @@ const previewNotifications = [
 export function TopNav() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDark, setIsDark] = useState(true);
+  const [isTestDialogOpen, setIsTestDialogOpen] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const unreadCount = 4;
@@ -93,7 +95,7 @@ export function TopNav() {
                 <Plus className="mr-2 h-4 w-4" />
                 Create API Key
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsTestDialogOpen(true)}>
                 <Send className="mr-2 h-4 w-4" />
                 Send Test Message
               </DropdownMenuItem>
@@ -196,17 +198,12 @@ export function TopNav() {
           </DropdownMenu>
 
           {/* Dialog */}
-          {/* <SendTestDialog
-            open={!!testRoute}
-            onOpenChange={(open) => {
-              if (!open) setTestRoute(null);
-            }}
-            route={testRoute?.route || null}
-            defaultEnv={testRoute?.env || "test"}
-          /> */}
+          <SendTestDialog
+            open={isTestDialogOpen}
+            onOpenChange={setIsTestDialogOpen}
+          />
         </div>
       </div>
     </header>
   );
 }
-
