@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { IntegrationsProvider } from "@/contexts/IntegrationContext";
 import { MessageProvider } from "@/contexts/MessageContext";
+import { DashboardProvider } from "@/contexts/DashboardContext";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 
 // Layouts
@@ -135,7 +136,9 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <DashboardLayout>
-                    <Dashboard />
+                    <DashboardProvider>
+                      <Dashboard />
+                    </DashboardProvider>
                   </DashboardLayout>
                 </ProtectedRoute>
               }
@@ -183,7 +186,9 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <DashboardLayout>
-                    <Analytics />
+                    <DashboardProvider>
+                      <Analytics />
+                    </DashboardProvider>
                   </DashboardLayout>
                 </ProtectedRoute>
               }
