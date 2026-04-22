@@ -1,6 +1,12 @@
 import { motion } from "framer-motion";
 import { User, Shield, BarChart3, Gauge } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +19,9 @@ export default function Settings() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-        <p className="text-muted-foreground">Manage your account and preferences.</p>
+        <p className="text-muted-foreground">
+          Manage your account and preferences.
+        </p>
       </div>
 
       <Tabs defaultValue="profile" className="space-y-4">
@@ -45,7 +53,9 @@ export default function Settings() {
             <Card className="border-border bg-card">
               <CardHeader>
                 <CardTitle>Profile Information</CardTitle>
-                <CardDescription>Update your personal information.</CardDescription>
+                <CardDescription>
+                  Update your personal information.
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
@@ -60,7 +70,11 @@ export default function Settings() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" defaultValue="john@example.com" />
+                  <Input
+                    id="email"
+                    type="email"
+                    defaultValue="john@example.com"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="company">Company</Label>
@@ -104,12 +118,16 @@ export default function Settings() {
             <Card className="border-border bg-card">
               <CardHeader>
                 <CardTitle>Two-Factor Authentication</CardTitle>
-                <CardDescription>Add an extra layer of security.</CardDescription>
+                <CardDescription>
+                  Add an extra layer of security.
+                </CardDescription>
               </CardHeader>
               <CardContent className="flex items-center justify-between">
                 <div>
                   <p className="text-sm">Enable 2FA for your account</p>
-                  <p className="text-xs text-muted-foreground">Requires authenticator app</p>
+                  <p className="text-xs text-muted-foreground">
+                    Requires authenticator app
+                  </p>
                 </div>
                 <Switch />
               </CardContent>
@@ -126,7 +144,9 @@ export default function Settings() {
             <Card className="border-border bg-card">
               <CardHeader>
                 <CardTitle>API Usage</CardTitle>
-                <CardDescription>Your current billing period usage.</CardDescription>
+                <CardDescription>
+                  Your current billing period usage.
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
@@ -135,7 +155,9 @@ export default function Settings() {
                     <span className="font-mono">1,200 / 5,000</span>
                   </div>
                   <Progress value={24} className="h-2" />
-                  <p className="text-xs text-muted-foreground">24% of monthly limit used</p>
+                  <p className="text-xs text-muted-foreground">
+                    24% of monthly limit used
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -144,7 +166,9 @@ export default function Settings() {
                     <span className="font-mono">8,450 / 50,000</span>
                   </div>
                   <Progress value={17} className="h-2" />
-                  <p className="text-xs text-muted-foreground">17% of monthly limit used</p>
+                  <p className="text-xs text-muted-foreground">
+                    17% of monthly limit used
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -153,14 +177,18 @@ export default function Settings() {
                     <span className="font-mono">245 MB / 1 GB</span>
                   </div>
                   <Progress value={24.5} className="h-2" />
-                  <p className="text-xs text-muted-foreground">24.5% of storage used</p>
+                  <p className="text-xs text-muted-foreground">
+                    24.5% of storage used
+                  </p>
                 </div>
 
                 <div className="pt-4 border-t border-border">
                   <p className="text-sm text-muted-foreground">
                     Billing period: March 1 - March 31, 2026
                   </p>
-                  <Button variant="outline" className="mt-2">Upgrade Plan</Button>
+                  <Button variant="outline" className="mt-2">
+                    Upgrade Plan
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -176,7 +204,9 @@ export default function Settings() {
             <Card className="border-border bg-card">
               <CardHeader>
                 <CardTitle>Rate Limits</CardTitle>
-                <CardDescription>Your API rate limits based on current plan.</CardDescription>
+                <CardDescription>
+                  Your API rate limits based on current plan.
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -198,7 +228,10 @@ export default function Settings() {
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-4">
-                  Need higher limits? <Button variant="link" className="p-0 h-auto text-xs">Contact sales</Button>
+                  Need higher limits?{" "}
+                  <Button variant="link" className="p-0 h-auto text-xs">
+                    Contact sales
+                  </Button>
                 </p>
               </CardContent>
             </Card>

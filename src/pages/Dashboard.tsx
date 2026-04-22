@@ -1,34 +1,82 @@
 import { motion } from "framer-motion";
-import { Send, Calendar, Key, Route, TrendingUp, CheckCircle, XCircle } from "lucide-react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import {
+  Send,
+  Calendar,
+  Key,
+  Route,
+  TrendingUp,
+  CheckCircle,
+  XCircle,
+  Loader2,
+} from "lucide-react";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
-
-const areaChartData = [
-  { name: "Mon", messages: 245 },
-  { name: "Tue", messages: 388 },
-  { name: "Wed", messages: 312 },
-  { name: "Thu", messages: 456 },
-  { name: "Fri", messages: 523 },
-  { name: "Sat", messages: 234 },
-  { name: "Sun", messages: 189 },
-];
-
-const pieChartData = [
-  { name: "Success", value: 2847, color: "hsl(142, 71%, 45%)" },
-  { name: "Failed", value: 153, color: "hsl(0, 84%, 60%)" },
-];
-
-const recentActivity = [
-  { id: 1, from: "contact@acme.com", subject: "Partnership inquiry", status: "success" as const, time: "2 min ago" },
-  { id: 2, from: "support@tech.io", subject: "Bug report", status: "success" as const, time: "5 min ago" },
-  { id: 3, from: "hello@startup.co", subject: "Demo request", status: "error" as const, time: "12 min ago" },
-  { id: 4, from: "sales@corp.net", subject: "Pricing question", status: "success" as const, time: "18 min ago" },
-  { id: 5, from: "dev@agency.com", subject: "API integration", status: "success" as const, time: "25 min ago" },
-];
+import { useDashboard } from "@/contexts/DashboardContext";
+import { formatDistanceToNow } from "date-fns";
 
 export default function Dashboard() {
+  const { metrics, loading, error } = useDashboard();
+
+  if (loading && !metrics) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 bg-destructive/10 border border-destructive rounded-lg text-destructive">
+        <p className="font-medium">Error loading dashboard</p>
+        <p className="text-sm">{error}</p>
+      </div>
+    );
+  }
+
+  if (!metrics) return null;
+
+  const areaChartData = metrics.messagesPerDay.map((d) => ({
+    name: new Date(d.day).toLocaleDateString("en-US", { weekday: "short" }),
+    messages: d.count,
+  }));
+
+  const pieChartData = [
+    {
+      name: "Success",
+      value: metrics.rates.success || 0,
+      color: "hsl(142, 71%, 45%)",
+    },
+    {
+      name: "Failed",
+      value: metrics.rates.failed || 0,
+      color: "hsl(0, 84%, 60%)",
+    },
+  ];
+
+  const totalRate = metrics.rates.success + metrics.rates.failed;
+  const successPercentage =
+    totalRate > 0
+      ? ((metrics.rates.success / totalRate) * 100).toFixed(1)
+      : "0.0";
+  const failedPercentage =
+    totalRate > 0
+      ? ((metrics.rates.failed / totalRate) * 100).toFixed(1)
+      : "0.0";
+
   return (
     <div className="space-y-6">
       <div>
@@ -40,32 +88,32 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Total Messages"
-          value={12847}
-          change="+12% from last month"
-          changeType="positive"
+          value={metrics.totals.messages}
+          change="All time total"
+          changeType="neutral"
           icon={Send}
           delay={0}
         />
         <StatCard
           title="Messages Today"
-          value={523}
-          change="+8% from yesterday"
+          value={metrics.totals.messagesToday}
+          change="Last 24 hours"
           changeType="positive"
           icon={Calendar}
           delay={0.1}
         />
         <StatCard
           title="Active API Keys"
-          value={8}
-          change="2 expiring soon"
+          value={metrics.totals.activeApiKeys}
+          change="Currently active"
           changeType="neutral"
           icon={Key}
           delay={0.2}
         />
         <StatCard
           title="Active Routes"
-          value={5}
-          change="All operational"
+          value={metrics.totals.activeRoutes}
+          change="Available integrations"
           changeType="positive"
           icon={Route}
           delay={0.3}
@@ -91,13 +139,34 @@ export default function Dashboard() {
               <ResponsiveContainer width="100%" height={300}>
                 <AreaChart data={areaChartData}>
                   <defs>
-                    <linearGradient id="colorMessages" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(239, 84%, 67%)" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="hsl(239, 84%, 67%)" stopOpacity={0} />
+                    <linearGradient
+                      id="colorMessages"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="5%"
+                        stopColor="hsl(239, 84%, 67%)"
+                        stopOpacity={0.3}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor="hsl(239, 84%, 67%)"
+                        stopOpacity={0}
+                      />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(222, 47%, 18%)" />
-                  <XAxis dataKey="name" stroke="hsl(220, 9%, 64%)" fontSize={12} />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="hsl(222, 47%, 18%)"
+                  />
+                  <XAxis
+                    dataKey="name"
+                    stroke="hsl(220, 9%, 64%)"
+                    fontSize={12}
+                  />
                   <YAxis stroke="hsl(220, 9%, 64%)" fontSize={12} />
                   <Tooltip
                     contentStyle={{
@@ -157,11 +226,11 @@ export default function Dashboard() {
               <div className="flex justify-center gap-4 mt-4">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-success" />
-                  <span className="text-sm">Success: 94.9%</span>
+                  <span className="text-sm">Success: {successPercentage}%</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <XCircle className="h-4 w-4 text-destructive" />
-                  <span className="text-sm">Failed: 5.1%</span>
+                  <span className="text-sm">Failed: {failedPercentage}%</span>
                 </div>
               </div>
             </CardContent>
@@ -181,7 +250,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentActivity.map((activity, index) => (
+              {metrics.recentActivity.map((activity, index) => (
                 <motion.div
                   key={activity.id}
                   className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
@@ -190,15 +259,30 @@ export default function Dashboard() {
                   transition={{ delay: 0.7 + index * 0.05 }}
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{activity.subject}</p>
-                    <p className="text-xs text-muted-foreground font-mono">{activity.from}</p>
+                    <p className="font-medium text-sm truncate">
+                      {activity.subject || "(No Subject)"}
+                    </p>
+                    <p className="text-xs text-muted-foreground font-mono">
+                      ID: {activity.id}
+                    </p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <StatusBadge status={activity.status} />
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">{activity.time}</span>
+                    <StatusBadge
+                      status={activity.status === "sent" ? "success" : "error"}
+                    />
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      {formatDistanceToNow(new Date(activity.sentAt), {
+                        addSuffix: true,
+                      })}
+                    </span>
                   </div>
                 </motion.div>
               ))}
+              {metrics.recentActivity.length === 0 && (
+                <p className="text-center text-muted-foreground py-8">
+                  No recent activity found.
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

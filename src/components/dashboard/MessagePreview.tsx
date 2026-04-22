@@ -5,21 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusBadge } from "./StatusBadge";
 import { CodeBlock } from "./CodeBlock";
+import { NormalizedMessage } from "@/utils/messageNormalizer";
 
 interface MessagePreviewProps {
-  message: {
-    id: string;
-    from: string;
-    to: string;
-    subject: string;
-    body: string;
-    status: "success" | "error" | "pending";
-    apiKeyPrefix: string;
-    date: string;
-    attachments?: string[];
-    imageUrl?: string;
-    rawPayload: Record<string, unknown>;
-  };
+  message: NormalizedMessage;
   onClose: () => void;
 }
 
@@ -55,11 +44,15 @@ export function MessagePreview({ message, onClose }: MessagePreviewProps) {
               </div>
               <div>
                 <span className="text-muted-foreground">To:</span>
-                <p className="font-mono text-xs mt-1">{message.to}</p>
+                <p className="font-mono text-xs mt-1">
+                  {message.to.join(", ")}
+                </p>
               </div>
               <div>
                 <span className="text-muted-foreground">API Key:</span>
-                <p className="font-mono text-xs mt-1">{message.apiKeyPrefix}...</p>
+                <p className="font-mono text-xs mt-1">
+                  {message.apiKeyPrefix}...
+                </p>
               </div>
               <div>
                 <span className="text-muted-foreground">Date:</span>
@@ -71,7 +64,9 @@ export function MessagePreview({ message, onClose }: MessagePreviewProps) {
 
         <Tabs defaultValue="body" className="w-full">
           <TabsList className="w-full">
-            <TabsTrigger value="body" className="flex-1">Body</TabsTrigger>
+            <TabsTrigger value="body" className="flex-1">
+              Body
+            </TabsTrigger>
             <TabsTrigger value="attachments" className="flex-1">
               <Paperclip className="h-4 w-4 mr-1" />
               Attachments
@@ -85,7 +80,7 @@ export function MessagePreview({ message, onClose }: MessagePreviewProps) {
           <TabsContent value="body" className="mt-4">
             <Card className="border-border">
               <CardContent className="p-4">
-                <div 
+                <div
                   className="prose prose-sm prose-invert max-w-none"
                   dangerouslySetInnerHTML={{ __html: message.body }}
                 />
@@ -100,8 +95,8 @@ export function MessagePreview({ message, onClose }: MessagePreviewProps) {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <img 
-                    src={message.imageUrl} 
+                  <img
+                    src={message.imageUrl}
                     alt="Message attachment"
                     className="rounded-lg max-w-full"
                   />
@@ -116,22 +111,27 @@ export function MessagePreview({ message, onClose }: MessagePreviewProps) {
                 {message.attachments && message.attachments.length > 0 ? (
                   <ul className="space-y-2">
                     {message.attachments.map((attachment, i) => (
-                      <li key={i} className="flex items-center gap-2 p-2 bg-muted rounded">
+                      <li
+                        key={i}
+                        className="flex items-center gap-2 p-2 bg-muted rounded"
+                      >
                         <Paperclip className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm font-mono">{attachment}</span>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-sm text-muted-foreground">No attachments</p>
+                  <p className="text-sm text-muted-foreground">
+                    No attachments
+                  </p>
                 )}
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="raw" className="mt-4">
-            <CodeBlock 
-              code={JSON.stringify(message.rawPayload, null, 2)} 
+            <CodeBlock
+              code={JSON.stringify(message.rawPayload, null, 2)}
               language="json"
               title="Raw Payload"
             />
