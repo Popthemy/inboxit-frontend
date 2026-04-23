@@ -13,10 +13,17 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
+import ComingSoon from "@/components/common/comingSoon";
 
 export default function Settings() {
+  const isComingSoon = true
+
+  if (isComingSoon) return <ComingSoon ></ComingSoon>
+  
+
   return (
     <div className="space-y-6">
+      
       <div>
         <h1 className="text-2xl font-bold text-foreground">Settings</h1>
         <p className="text-muted-foreground">

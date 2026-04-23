@@ -48,7 +48,7 @@ interface FormType {
 }
 
 export default function Profile() {
-  const { user, setUser } = useAuth();
+  const { user, updateProfile } = useAuth();
   const { toast } = useToast();
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [webhookAlerts, setWebhookAlerts] = useState(false);
@@ -64,49 +64,36 @@ export default function Profile() {
     gender: user?.gender || "",
   });
 
-  console.log("formdata", Object.keys(formData));
-  console.log("user", Object.keys(user));
-
   // use partial<User> for the payload
   const changedData = useMemo(() => {
     const changes: Partial<FormType> = {};
-    
+
     (Object.keys(formData) as Array<keyof FormType>).forEach((key) => {
-      console.log("form data key:", key)
-      const current = formData[key ?? ""].toString();
-      const original = (user?.[key  as keyof typeof user] ?? "").toString();
+      const current = formData[key] || "";
+      const original = (user?.[key as keyof typeof user] || "") as string;
       if (current !== original) {
         changes[key] = current as any;
       }
     });
-    console.log("changes:", changes)
     return changes;
   }, [formData, user]);
 
-  
   const isTypingActivated = Object.keys(changedData).length > 0;
-  console.log("changesdata", changedData, isTypingActivated)
 
   const handleSave = async () => {
     if (Object.keys(changedData).length === 0) return;
 
-    setIsLoading(false);
+    setIsLoading(true);
     try {
-      const response = await api.patch<FormType>(
-        `users/${user.id}/profiles/`,
-        changedData,
-      );
-      console.log(response);
-      // setUser()
+      await updateProfile(changedData);
       toast({
         title: "Profile updated",
         description: "Your changes have been saved.",
       });
-    } catch (err) {
-      console.error("Profile update error:", err.response || err);
+    } catch (err: any) {
       toast({
         title: "Error",
-        description: err.message || "updating profile failed",
+        description: err.message || "Updating profile failed",
         variant: "destructive",
       });
     } finally {
@@ -203,7 +190,7 @@ export default function Profile() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Last Name</Label>
+                  <Label>Last Name (Surname)</Label>
                   <Input
                     value={`${formData.lastName}`}
                     placeholder="Enter your surname.."

@@ -1,3 +1,5 @@
+import { zxcvbn, zxcvbnOptions } from "@zxcvbn-ts/core";
+import { dictionary, translations } from "@zxcvbn-ts/language-en";
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -12,18 +14,53 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
   const email = searchParams.get("email") || "";
+  const otp = searchParams.get("otp") || "";
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isReset, setIsReset] = useState(false);
+
   const navigate = useNavigate();
+  const { verifyPasswordReset } = useAuth();
   const { toast } = useToast();
+
+  const [passwordScore, setPasswordScore] = useState(0);
+  const [passwordFeedback, setPasswordFeedback] = useState("");
+  const [crackTime, setCrackTime] = useState("");
+  const [error, setError] = useState("");
+
+  const handlePasswordChange = (value: string) => {
+    setPassword(value);
+
+    if (!value) {
+      setPasswordScore(0);
+      setPasswordFeedback("");
+      setCrackTime("");
+      return;
+    }
+
+    const result = zxcvbn(value, [email]);
+
+    setPasswordScore(result.score);
+
+    setPasswordFeedback(
+      result.feedback.warning || result.feedback.suggestions[0] || "",
+    );
+
+    setCrackTime(result.crackTimesDisplay.offlineSlowHashing1e4PerSecond);
+  };
+
+  zxcvbnOptions.setOptions({
+    dictionary,
+    translations,
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,10 +69,29 @@ export default function ResetPassword() {
       return;
     }
     setIsLoading(true);
-    // Simulate API call: POST /api/reset-password { email, password }
-    await new Promise((r) => setTimeout(r, 1000));
-    setIsLoading(false);
-    setIsReset(true);
+    if (otp.length !== 6) return;
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (passwordScore < 2) {
+      setError("Password is too weak");
+      return;
+    }
+    try {
+      await verifyPasswordReset(email, otp, password, confirmPassword);
+      setIsReset(true);
+    } catch (err: any) {
+      toast({
+        title: "Reset failed",
+        description: err.message || "Could not reset password.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (isReset) {
@@ -110,7 +166,7 @@ export default function ResetPassword() {
                     required
                     minLength={8}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => handlePasswordChange(e.target.value)}
                   />
                   <button
                     type="button"
@@ -143,13 +199,63 @@ export default function ResetPassword() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                   />
+                  {confirmPassword && password !== confirmPassword && (
+                    <p className="text-xs text-destructive">
+                      Passwords do not match
+                    </p>
+                  )}
                 </div>
               </div>
+
+              {password && (
+                <div className="space-y-2">
+                  <div className="h-2 w-full bg-muted rounded">
+                    <div
+                      className={`h-2 rounded transition-all ${
+                        passwordScore === 0
+                          ? "w-1/5 bg-red-500"
+                          : passwordScore === 1
+                            ? "w-2/5 bg-orange-500"
+                            : passwordScore === 2
+                              ? "w-3/5 bg-yellow-500"
+                              : passwordScore === 3
+                                ? "w-4/5 bg-blue-500"
+                                : "w-full bg-green-500"
+                      }`}
+                    />
+                  </div>
+
+                  <p className="text-xs text-muted-foreground">
+                    Strength:{" "}
+                    {
+                      ["Very weak", "Weak", "Fair", "Strong", "Very strong"][
+                        passwordScore
+                      ]
+                    }
+                  </p>
+
+                  {crackTime && (
+                    <p className="text-xs text-muted-foreground">
+                      Crack time: {crackTime}
+                    </p>
+                  )}
+
+                  {passwordFeedback && (
+                    <p className="text-xs text-muted-foreground">
+                      {passwordFeedback}
+                    </p>
+                  )}
+                </div>
+              )}
 
               <Button
                 type="submit"
                 className="w-full gap-2"
-                disabled={isLoading}
+                disabled={isLoading || (!password ||
+                    !confirmPassword ||
+                    password !== confirmPassword ||
+                    passwordScore < 2)
+                }
               >
                 {isLoading ? "Resetting..." : "Reset password"}
                 {!isLoading && <ArrowRight className="h-4 w-4" />}

@@ -83,29 +83,17 @@ export default function Analytics() {
   }));
 
   const totalRate = metrics.rates.success + metrics.rates.failed;
-  const successRate =
-    totalRate > 0 ? (metrics.rates.success / totalRate) * 100 : 0;
-  const failedRate =
-    totalRate > 0 ? (metrics.rates.failed / totalRate) * 100 : 0;
+  const successRate = totalRate > 0 ? (metrics.rates.success / totalRate) * 100 : 0;
+  const failedRate = totalRate > 0 ? (metrics.rates.failed / totalRate) * 100 : 0;
 
   const successData = [
-    {
-      name: "Success",
-      value: parseFloat(successRate.toFixed(1)),
-      color: "hsl(142, 71%, 45%)",
-    },
-    {
-      name: "Failed",
-      value: parseFloat(failedRate.toFixed(1)),
-      color: "hsl(0, 84%, 60%)",
-    },
+    { name: "Success", value: parseFloat(successRate.toFixed(1)), color: "hsl(142, 71%, 45%)" },
+    { name: "Failed", value: parseFloat(failedRate.toFixed(1)), color: "hsl(0, 84%, 60%)" },
   ];
 
-  const avgDaily =
-    metrics.messagesPerDay.length > 0
-      ? metrics.messagesPerDay.reduce((acc, curr) => acc + curr.count, 0) /
-        metrics.messagesPerDay.length
-      : 0;
+  const avgDaily = metrics.messagesPerDay.length > 0 
+    ? metrics.messagesPerDay.reduce((acc, curr) => acc + curr.count, 0) / metrics.messagesPerDay.length 
+    : 0;
 
   return (
     <div className="space-y-6">

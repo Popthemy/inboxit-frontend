@@ -91,7 +91,7 @@ export function TopNav() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/onboarding")}>
                 <Plus className="mr-2 h-4 w-4" />
                 Create API Key
               </DropdownMenuItem>

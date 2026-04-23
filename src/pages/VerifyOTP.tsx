@@ -25,11 +25,13 @@ export default function VerifyOTP() {
   const email = searchParams.get("email") || "";
   const flow = searchParams.get("flow") || "signup"; // "signup" | "reset"
   const [otp, setOtp] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(OTP_EXPIRY_SECONDS);
   const [isExpired, setIsExpired] = useState(false);
   const navigate = useNavigate();
-  const { signup } = useAuth();
+  const { verifyEmailOtp, resendEmailOtp, verifyPasswordReset } = useAuth();
   const { toast } = useToast();
 
   // Countdown timer
@@ -60,21 +62,53 @@ export default function VerifyOTP() {
     if (otp.length !== 6) return;
     setIsLoading(true);
 
-    // Simulate API call: POST /api/verify-otp { email, otp, flow }
-    await new Promise((r) => setTimeout(r, 1200));
-
-    if (flow === "signup") {
-      toast({ title: "Account verified!", description: "Welcome to Inboxit." });
-      navigate("/onboarding");
-    } else {
-      toast({ title: "OTP verified!", description: "Set your new password." });
-      navigate(`/reset-password?email=${encodeURIComponent(email)}`);
+    try {
+      if (flow === "signup") {
+        await verifyEmailOtp(email, otp);
+        toast({
+          title: "Account verified!",
+          description: "Welcome to Inboxit.",
+        });
+        navigate("/onboarding");
+      } else {
+        // await verifyPasswordReset(email, otp, password, confirmPassword);
+        // toast({
+        //   title: "OTP verified!",
+        //   description: "Set your new password.",
+        // });
+        navigate(
+          `/reset-password?email=${encodeURIComponent(email)}&otp=${otp}`,
+        );
+      }
+    } catch (err: any) {
+      console.log("handleverify", JSON.stringify(err.message))
+      toast({
+        title: "Verification failed",
+        description: err.message || "Invalid OTP.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
-  const handleResendOTP = () => {
-    navigate(`/resend-otp?email=${encodeURIComponent(email)}&flow=${flow}`);
+  const handleResendOTP = async () => {
+    console.log(`handle resend otp click...`)
+    try {
+      await resendEmailOtp(email);
+      setTimeLeft(OTP_EXPIRY_SECONDS);
+      setIsExpired(false);
+      toast({
+        title: "OTP resent",
+        description: `A new code has been sent to ${email}`,
+      });
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message || "Could not resend OTP.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (!email) {
@@ -175,7 +209,7 @@ export default function VerifyOTP() {
                 className="gap-2"
                 onClick={handleResendOTP}
               >
-                <ReafreshCw className="h-4 w-4" />
+                <RefreshCw className="h-4 w-4" />
                 Resend OTP
               </Button>
             </div>
