@@ -9,9 +9,6 @@ import {
   User,
   LogOut,
   Settings,
-  MessageSquare,
-  Key,
-  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,48 +22,34 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { SearchBar } from "@/components/dashboard/SearchBar";
-import { formatDistanceToNow, subMinutes, subHours } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { SendTestDialog } from "@/components/dashboard/SendTestDialog";
-
-const previewNotifications = [
-  {
-    id: 1,
-    title: "New message from contact form",
-    message: "John Doe submitted your portfolio form.",
-    icon: MessageSquare,
-    time: subMinutes(new Date(), 5),
-    color: "text-blue-400",
-  },
-  {
-    id: 2,
-    title: "API key created",
-    message: "pk_live_9x...3f was generated.",
-    icon: Key,
-    time: subHours(new Date(), 1),
-    color: "text-green-400",
-  },
-  {
-    id: 3,
-    title: "Message delivery failed",
-    message: "Email to admin@example.com bounced.",
-    icon: AlertTriangle,
-    time: subHours(new Date(), 3),
-    color: "text-destructive",
-  },
-];
+import { useNotifications } from "@/contexts/useNotifications";
+import { typeConfig, routeMap } from "@/utils/notificationUtils";
 
 export function TopNav() {
+  const { unreadCount, notifications, markAsRead } = useNotifications();
   const [searchQuery, setSearchQuery] = useState("");
   const [isDark, setIsDark] = useState(true);
   const [isTestDialogOpen, setIsTestDialogOpen] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const unreadCount = 4;
 
   const toggleTheme = () => {
     setIsDark(!isDark);
     document.documentElement.classList.toggle("light");
   };
+
+  const handleNotificationClick = async (notification: any) => {
+    await markAsRead(notification.id);
+    const pathFn = routeMap[notification.type];
+    if (pathFn) {
+      navigate(pathFn(notification.objectId));
+    }
+  };
+
+  // Show only the first 5 notifications in the dropdown
+  const recentNotifications = notifications.slice(0, 5);
 
   return (
     <header className="h-14 border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
@@ -129,26 +112,63 @@ export function TopNav() {
                 </span>
               </div>
               <DropdownMenuSeparator />
-              {previewNotifications.map((n) => (
-                <DropdownMenuItem
-                  key={n.id}
-                  className="flex items-start gap-3 p-3 cursor-pointer"
-                  onClick={() => navigate("/notifications")}
-                >
-                  <div className="w-8 h-8 rounded-full bg-secondary/60 flex items-center justify-center shrink-0 mt-0.5">
-                    <n.icon className={`h-3.5 w-3.5 ${n.color}`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{n.title}</p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {n.message}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground/60 mt-0.5">
-                      {formatDistanceToNow(n.time, { addSuffix: true })}
-                    </p>
-                  </div>
-                </DropdownMenuItem>
-              ))}
+              {recentNotifications.length > 0 ? (
+                recentNotifications.map((notification) => {
+                  const config =
+                    typeConfig[notification.type] || typeConfig.new_message;
+                  const Icon = config.icon;
+                  return (
+                    <DropdownMenuItem
+                      key={notification.id}
+                      className={`flex items-start gap-3 p-3 cursor-pointer ${
+                        notification.isRead
+                          ? "hover:bg-secondary/40"
+                          : "bg-primary/5 border-l-2 border-primary hover:bg-primary/10"
+                      }`}
+                      onClick={() => handleNotificationClick(notification)}
+                    >
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
+                          notification.isRead
+                            ? "bg-secondary/60"
+                            : "bg-primary/10"
+                        }`}
+                      >
+                        <Icon className={`h-3.5 w-3.5 ${config.color}`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className={`text-sm truncate ${
+                            notification.isRead
+                              ? "text-foreground"
+                              : "font-semibold text-foreground"
+                          }`}
+                        >
+                          {notification.title}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {notification.message}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground/60 mt-0.5">
+                          {formatDistanceToNow(
+                            new Date(notification.createdAt),
+                            {
+                              addSuffix: true,
+                            },
+                          )}
+                        </p>
+                      </div>
+                      {!notification.isRead && (
+                        <span className="w-2 h-2 rounded-full bg-primary shrink-0 mt-1" />
+                      )}
+                    </DropdownMenuItem>
+                  );
+                })
+              ) : (
+                <div className="px-3 py-4 text-center text-sm text-muted-foreground">
+                  No notifications yet
+                </div>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild className="justify-center">
                 <Link

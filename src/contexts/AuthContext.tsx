@@ -241,8 +241,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await authService.verifyPasswordReset({ email, otp, password, confirmPassword });
     } catch (err: any) {
-      const responseData = err.response?.data || {};
-      throw new Error(responseData?.detail || "Password reset verification failed");
+      const responseData =
+        err.response?.data?.message ||
+        err.response?.data|| "Password reset verification failed"
+      console.log("auth context password reset", JSON.stringify(responseData));
+      throw new Error(responseData );
     }
   };
 

@@ -40,6 +40,7 @@ export default function VerifyOTP() {
       setIsExpired(true);
       return;
     }
+
     const interval = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {

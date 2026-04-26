@@ -89,8 +89,8 @@ const authService = {
     confirmPassword:string;
   }) => {
     const res = await apiClient.post(
-      `/users/password-reset/verify-password-otp/email=${data.email}`,
-      data,
+      `/users/password-reset/verify-password-otp/?email=${data.email}`,
+      {...data , newPassword: data.password, confirmNewPassword: data.confirmPassword },
     );
     return res.data;
   },

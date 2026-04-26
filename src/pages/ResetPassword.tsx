@@ -53,7 +53,6 @@ export default function ResetPassword() {
     setPasswordFeedback(
       result.feedback.warning || result.feedback.suggestions[0] || "",
     );
-
     setCrackTime(result.crackTimesDisplay.offlineSlowHashing1e4PerSecond);
   };
 
@@ -80,10 +79,12 @@ export default function ResetPassword() {
       setError("Password is too weak");
       return;
     }
+
     try {
       await verifyPasswordReset(email, otp, password, confirmPassword);
       setIsReset(true);
     } catch (err: any) {
+      console.log("password reset", JSON.stringify(err))
       toast({
         title: "Reset failed",
         description: err.message || "Could not reset password.",
