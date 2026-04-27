@@ -7,63 +7,26 @@ import {
   ReactNode,
 } from "react";
 import { useNavigate } from "react-router-dom";
-import apiClient from "@/services/client";
-
-export interface User {
-  id: string;
-  email: string;
-  fullname: string;
-  firstName: string;
-  lastName: string;
-  gender: "M" | "F" | "other" | "";
-  avatar?: string;
-  company?: string;
-  phoneNumber?: string;
-  plan: "free" | "pro" | "enterprise";
-  bio: string;
-  createdAt: string;
-}
-
-interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-  accessExpires: number; // timestamp in ms
-}
+import authService, {type User, type AuthTokens } from "@/services/authService";
 
 interface AuthContextType {
   user: User | null;
-  setUser: (user: User) => void;
+  setUser: (user: User | null) => void;
   tokens: AuthTokens | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (name: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
+  signup: (firstName: string, lastName:string, email: string, password: string,confirmPassword:string) => Promise<void>;
+  verifyEmailOtp: (email: string, otp: string) => Promise<void>;
+  resendEmailOtp: (email: string) => Promise<void>;
+  logout: () => Promise<void>;
   refreshAccessToken: () => Promise<void>;
+  requestPasswordReset: (email: string) => Promise<void>;
+  verifyPasswordReset: (email: string, otp: string, password: string,confirmPassword: string ) => Promise<void>;
+  updateProfile: (profileData: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
-
-const MOCK_USER: User = {
-  id: "usr_m0ck_1a2b3c4d",
-  email: "john@example.com",
-  fullname: "John Doe",
-  company: "Acme Inc.",
-  plan: "pro",
-  phoneNumber: "+234706224563",
-  bio: "Software Engineer",
-  createdAt: "2026-01-15T10:00:00Z",
-};
-
-// Mock JWT generation (simulates 30min expiry)
-function generateMockTokens(): AuthTokens {
-  const now = Date.now();
-  return {
-    accessToken: `eyJ_mock_access_${now}`,
-    refreshToken: `eyJ_mock_refresh_${now}`,
-    expiresAt: now + 30 * 60 * 1000, // 30 minutes
-  };
-}
 
 function setCookie(name: string, value: string, expires: number) {
   const expiresDate = new Date(expires).toUTCString();
@@ -85,88 +48,79 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  const fetchProfile = useCallback(async (access: string) => {
-    if (!access) return;
-    try {
-      const res = await apiClient.get(`/users/me/`, {
-        headers: { Authorization: `Bearer ${access}` },
-      });
-      if (!res.data || !res.data.data) {
-        throw new Error("Invalid profile response");
-      }
-      const { data } = res.data;
-      console.error("profile data:", data);
-
-      setUser({
-        ...data,
-        createdAt: new Date(data?.createdAt).toLocaleDateString("en-US", {
-          month: "long",
-          year: "numeric",
-        }),
-      });
-    } catch (err) {
-      console.error("Profile fetch error:", err.response || err);
-      throw new Error("Failed to fetch user profile", err.response.data);
-    }
-  }, []);
-  
-  const saveCookies = (token: AuthTokens) => {
+  const saveCookies = useCallback((token: any) => {
     const newTokens: AuthTokens = {
-        accessToken: token.accessToken,
-        refreshToken: token.refreshToken,
-        accessExpires: Date.now() + Number(token.accessExpires) * 1000,
+      accessToken: token.accessToken,
+      refreshToken: token.refreshToken,
+      accessExpires: Date.now() + Number(token.accessExpires || 3600) * 1000,
     };
-    
+
     setTokens(newTokens);
-    // setUser({ ...MOCK_USER, email });
     setCookie("inboxit_access", newTokens.accessToken, newTokens.accessExpires);
     setCookie(
       "inboxit_refresh",
       newTokens.refreshToken,
-      Date.now() + 2 * 24 * 60 * 60 * 1000,
+      Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days for refresh token
     );
     setCookie("inboxit_expires", String(newTokens.accessExpires), newTokens.accessExpires);
-  }
+  }, []);
 
-  const logout = () => {
-    setUser(null);
-    setTokens(null);
-    deleteCookie("inboxit_access");
-    deleteCookie("inboxit_refresh");
-    deleteCookie("inboxit_expires");
-    navigate("/");
-  };
+  const fetchProfile = useCallback(async () => {
+    try {
+      const res = await authService.fetchMe();
+      if (!res || !res.data) {
+        throw new Error("Invalid profile response");
+      }
+      const data = res.data;
+
+      setUser({
+        ...data,
+        createdAt: new Date(data.createdAt).toLocaleDateString("en-US", {
+          month: "long",
+          year: "numeric",
+        }),
+      });
+    } catch (err: any) {
+      console.error("Profile fetch error:", err.response || err);
+      // If profile fetch fails, we might have an invalid token
+      throw err;
+    }
+  }, []);
+
+  const logout = useCallback(async () => {
+    try {
+      await authService.logout();
+    } catch (err) {
+      console.error("Logout error:", err);
+    } finally {
+      setUser(null);
+      setTokens(null);
+      deleteCookie("inboxit_access");
+      deleteCookie("inboxit_refresh");
+      deleteCookie("inboxit_expires");
+      navigate("/login");
+    }
+  }, [navigate]);
 
   const refreshAccessToken = useCallback(async () => {
     const refreshToken = getCookie("inboxit_refresh");
-    console.log("Attempting token refresh with refresh token:", refreshToken);
     if (!refreshToken) {
       logout();
       return;
     }
-    // API call to refresh
     try {
-      const res = await apiClient.post(`/users/refresh/`, { refresh: refreshToken });
-      const { token } = res.data;
-      console.log("refresh:", res.data);
-
-      saveCookies(token)
+      const res = await authService.refresh(refreshToken);
+      const { token } = res;
+      saveCookies(token);
     } catch (err) {
-      console.error("Token refresh error:", err.response || err);
+      console.error("Token refresh error:", err);
       logout();
     }
-  }, []);
-
-  console.log(
-    "cookies",
-    // getCookie("inboxit_access"),
-    getCookie("inboxit_refresh"),
-    getCookie("inboxit_expires"),
-  );
+  }, [logout, saveCookies]);
 
   // Initialize from cookies
   useEffect(() => {
-    const res = async () => {
+    const initAuth = async () => {
       try {
         const accessToken = getCookie("inboxit_access");
         const refreshToken = getCookie("inboxit_refresh");
@@ -176,17 +130,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const exp = Number(accessExpires);
           if (Date.now() < exp) {
             setTokens({ accessToken, refreshToken, accessExpires: exp });
-            await fetchProfile(accessToken);
+            await fetchProfile();
           } else {
-            // Token expired — try refresh
             await refreshAccessToken();
           }
         }
+      } catch (err) {
+        console.error("Auth initialization error:", err);
       } finally {
         setIsLoading(false);
       }
     };
-    res();
+    initAuth();
   }, [refreshAccessToken, fetchProfile]);
 
   // Auto-refresh before expiry
@@ -201,46 +156,108 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(timer);
   }, [tokens, refreshAccessToken]);
 
-
-  const login = async (email: string, _password: string) => {
+  const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      const res = await apiClient.post(`/users/login/`, {
-        email,
-        password: _password,
-      });
-
-      const { token } = res.data;
+      const res = await authService.login({ email, password });
+      const { token } = res;
       saveCookies(token);
-
-      await fetchProfile(token.accessToken);
+      await fetchProfile();
     } catch (err: any) {
       const responseData = err.response?.data || {};
       const specificError =
         responseData?.data?.non_field_errors?.[0] ||
         responseData?.detail ||
         "Authentication Failed";
-      console.error("Login error:", err.response || err);
       throw new Error(specificError);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const signup = async (name: string, email: string, _password: string) => {
+  const signup = async (firstName: string, lastName: string ,email: string, password: string, confirmPassword:string) => {
     setIsLoading(true);
-    await new Promise((r) => setTimeout(r, 800));
-    const newTokens = generateMockTokens();
-    setTokens(newTokens);
-    setUser({ ...MOCK_USER, name, email, createdAt: new Date().toISOString() });
-    setCookie("inboxit_access", newTokens.accessToken, 30);
-    setCookie(
-      "inboxit_refresh",
-      newTokens.refreshToken,
-      2 * 24 * 60 * 60 * 1000,
-    );
-    setCookie("inboxit_expires", String(newTokens.expiresAt), 30);
-    setIsLoading(false);
+    console.log(`signup ${firstName}, ${password}`)
+    try {
+      await authService.signup({ firstName, lastName, email, password, confirmPassword });
+      console.log(`signup after${firstName}, ${password}`)
+      // Signup usually requires OTP verification next
+    } catch (error: any) {
+      const serverMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Account creation failed.";
+
+      // 2. IMPORTANT: You must throw a NEW error with just the string
+      // This allows your component to use 'err.message'
+      throw new Error(serverMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const verifyEmailOtp = async (email: string, otp: string) => {
+    setIsLoading(true);
+    try {
+      const res = await authService.verifyEmailOtp({ email, otp });
+      const { token } = res;
+      if (token) {
+        saveCookies(token);
+        await fetchProfile();
+      }
+    } catch (err: any) {
+      
+      const responseData =
+      err.response?.data?.message || err.response?.data || "Verification Failed";
+      console.log("auth context verfiy",JSON.stringify(responseData));
+      throw new Error(responseData);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resendEmailOtp = async (email: string) => {
+    try {
+      await authService.resendEmailOtp({ email });
+    } catch (err: any) {
+      const responseData =
+      err.response?.data?.message || err.response?.data || {};
+      
+      console.log(`debug resend emailOTP ${JSON.stringify(responseData)}`)
+      throw new Error(responseData?.detail || "Failed to resend OTP");
+    }
+  };
+
+  const requestPasswordReset = async (email: string) => {
+    try {
+      await authService.requestPasswordReset({ email });
+    } catch (err: any) {
+      const responseData = err.response?.data || {};
+      throw new Error(responseData?.detail || "Password reset request failed");
+    }
+  };
+
+  const verifyPasswordReset = async (email: string, otp: string, password: string, confirmPassword) => {
+    try {
+      await authService.verifyPasswordReset({ email, otp, password, confirmPassword });
+    } catch (err: any) {
+      const responseData =
+        err.response?.data?.message ||
+        err.response?.data|| "Password reset verification failed"
+      console.log("auth context password reset", JSON.stringify(responseData));
+      throw new Error(responseData );
+    }
+  };
+
+  const updateProfile = async (profileData: Partial<User>) => {
+    if (!user) return;
+    try {
+      await authService.updateProfile(user.id, profileData);
+      await fetchProfile();
+    } catch (err: any) {
+      const responseData = err.response?.data || {};
+      throw new Error(responseData?.detail || "Failed to update profile");
+    }
   };
 
   return (
@@ -253,8 +270,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         login,
         signup,
+        verifyEmailOtp,
+        resendEmailOtp,
         logout,
         refreshAccessToken,
+        requestPasswordReset,
+        verifyPasswordReset,
+        updateProfile,
       }}
     >
       {children}

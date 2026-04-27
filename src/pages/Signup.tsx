@@ -5,13 +5,23 @@ import { Mail, Lock, Eye, EyeOff, ArrowRight, User, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { MutedVideo } from "@/components/common/mutedVideo";
-
-
+import { zxcvbn, zxcvbnOptions } from "@zxcvbn-ts/core";
+import { dictionary, translations } from "@zxcvbn-ts/language-en";
+zxcvbnOptions.setOptions({
+  translations,
+  dictionary,
+});
 const benefits = [
   "100 free submissions every month",
   "No credit card required",
@@ -20,29 +30,94 @@ const benefits = [
 
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+
+  // password strength
+  const [passwordScore, setPasswordScore] = useState(0);
+  const [passwordFeedback, setPasswordFeedback] = useState("");
+  const [crackTime, setCrackTime] = useState("");
+
   const { signup, isLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      // Simulate sending OTP to the user's email
-      await new Promise((r) => setTimeout(r, 800));
-      toast({ title: "Verification code sent!", description: `Check your inbox at ${email}` });
-      navigate(`/verify-otp?email=${encodeURIComponent(email)}&flow=signup`);
-    } catch {
-      toast({ title: "Error", description: "Could not send verification code.", variant: "destructive" });
+    setError("");
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
     }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
+
+    try {
+      await signup(firstName, lastName, email, password, confirmPassword);
+
+      toast({
+        title: "Verification code sent!",
+        description: `Check your inbox at ${email}`,
+      });
+
+      navigate(`/verify-otp?email=${encodeURIComponent(email)}&flow=signup`);
+    } catch (error: any) {
+      const serverMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Account creation failed.";
+
+      // 2. IMPORTANT: You must throw a NEW error with just the string
+      // This allows your component to use 'err.message'
+      // throw new prror(serverMessage);
+      console.log("server error during signup",serverMessage, error);
+      toast({
+        title: "Error",
+        description: serverMessage,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePassword = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPassword(value);
+    if (!value) {
+      setPasswordScore(0);
+      setPasswordFeedback("");
+      setCrackTime("");
+      return;
+    }
+
+    const result = zxcvbn(value, [email, firstName, lastName]);
+
+    setPasswordScore(result.score);
+
+    // Better feedback handling
+    if (result.feedback.warning) {
+      setPasswordFeedback(result.feedback.warning);
+    } else if (result.feedback.suggestions.length > 0) {
+      setPasswordFeedback(result.feedback.suggestions[0]);
+    } else {
+      setPasswordFeedback("");
+    }
+
+    // Bonus: crack time (industry-level UX)
+    setCrackTime(result.crackTimesDisplay.offlineSlowHashing1e4PerSecond);
   };
 
   const handleSocialSignup = (provider: string) => {
     toast({
-      title: "Demo Mode",
-      description: `${provider} signup will be available when backend is connected.`,
+      title: "Social Mode",
+      description: `${provider} signup will be available soon.`,
     });
   };
 
@@ -61,7 +136,7 @@ export default function Signup() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <Card className="border-border bg-card">
+          <Card className="border-border bg-card h-full">
             <CardHeader className="text-center">
               <Link
                 to="/"
@@ -78,7 +153,7 @@ export default function Signup() {
             </CardHeader>
             <CardContent>
               {/* Social Signup Buttons */}
-              <div className="space-y-3">
+              {/* <div className="space-y-3">
                 <Button
                   variant="outline"
                   className="w-full gap-2"
@@ -118,30 +193,47 @@ export default function Signup() {
                   </svg>
                   Continue with GitHub
                 </Button>
-              </div>
+              </div> */}
 
-              <div className="relative my-6">
+              {/* <div className="relative my-6">
                 <Separator />
                 <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-2 text-xs text-muted-foreground">
                   or continue with email
                 </span>
-              </div>
+              </div> */}
 
               {/* Email Signup Form */}
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full name</Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="name"
-                      type="text"
-                      placeholder="John Doe"
-                      className="pl-10"
-                      required
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                    />
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">First name</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="name"
+                        type="text"
+                        placeholder="John"
+                        className="pl-10"
+                        required
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Last name (Surname)</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="name"
+                        type="text"
+                        placeholder="Praise"
+                        className="pl-10"
+                        required
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -173,7 +265,7 @@ export default function Signup() {
                       required
                       minLength={8}
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={handlePassword}
                     />
                     <button
                       type="button"
@@ -191,11 +283,93 @@ export default function Signup() {
                     Must be at least 8 characters
                   </p>
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="confirmPassword"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      className="pl-10"
+                      required
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
+                  </div>
+                  {password && (
+                    <div className="space-y-2">
+                      {/* Strength bar */}
+                      <div className="h-2 w-full bg-muted rounded">
+                        <div
+                          className={`h-2 rounded transition-all ${
+                            passwordScore === 0
+                              ? "w-1/5 bg-red-500"
+                              : passwordScore === 1
+                                ? "w-2/5 bg-orange-500"
+                                : passwordScore === 2
+                                  ? "w-3/5 bg-yellow-500"
+                                  : passwordScore === 3
+                                    ? "w-4/5 bg-blue-500"
+                                    : "w-full bg-green-500"
+                          }`}
+                        />
+                      </div>
+
+                      {/* Label */}
+                      <p className="text-xs text-muted-foreground">
+                        Strength:{" "}
+                        <span className="font-medium">
+                          {
+                            [
+                              "Very weak",
+                              "Weak",
+                              "Fair",
+                              "Strong",
+                              "Very strong",
+                            ][passwordScore]
+                          }
+                        </span>
+                      </p>
+
+                      {/* Crack time */}
+                      {password && (
+                        <p className="text-xs text-muted-foreground">
+                          Estimated crack time: {crackTime}
+                        </p>
+                      )}
+
+                      {/* Feedback */}
+                      {passwordFeedback && (
+                        <p className="text-xs text-muted-foreground">
+                          {passwordFeedback}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {confirmPassword && password !== confirmPassword && (
+                    <p className="text-xs text-destructive">
+                      Passwords do not match
+                    </p>
+                  )}
+                </div>
+                {error && (
+                  <p className="text-sm text-destructive text-center">
+                    {error}
+                  </p>
+                )}
 
                 <Button
                   type="submit"
                   className="w-full gap-2"
-                  disabled={isLoading}
+                  disabled={
+                    isLoading ||
+                    !email ||
+                    !password ||
+                    password !== confirmPassword ||
+                    passwordScore < 2
+                  }
                 >
                   {isLoading ? "Creating account..." : "Create account"}
                   {!isLoading && <ArrowRight className="h-4 w-4" />}
