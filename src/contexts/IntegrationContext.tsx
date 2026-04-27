@@ -134,17 +134,25 @@ function useIntegrations() {
     webhookUrls?: string;
   }) => {
     const payload = toRoutePayload(input);
-    console.log( `updates: ${JSON.stringify(input)}`);
-    console.log(`payload: ${JSON.stringify(payload)}`);
-    const res = await integrationService.create(payload);
-    const integration = normalizeRouteIntegration(res);
-    setRoutes((prev) => [integration, ...prev]);
-    console.log(`createIntegration: ${JSON.stringify(integration)}`);
+    // console.log( `updates: ${JSON.stringify(input)}`);
+    // console.log(`payload: ${JSON.stringify(payload)}`);
+    try{
+      setLoading(true);
+
+      const res = await integrationService.create(payload);
+      const integration = normalizeRouteIntegration(res);
+      setRoutes((prev) => [integration, ...prev]);
+      return integration ;
+    } catch (error){
+      throw new Error(error)
+    } finally {
+      setLoading(false);
+    }
+    // console.log(`createIntegration: ${JSON.stringify(integration)}`);
 
     //testKey: { prefix: "ib_test_", full: testFull, lastUsed: "Never" },
     // liveKey: { prefix: "ib_live_", full: liveFull, lastUsed: "Never" },
     //{ testKey: testFull, liveKey: liveFull }
-    return integration ;
   };
 
   // ✅ UPDATE (PATCH)
