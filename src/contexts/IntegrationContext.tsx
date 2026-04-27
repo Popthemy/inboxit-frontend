@@ -144,7 +144,9 @@ function useIntegrations() {
       setRoutes((prev) => [integration, ...prev]);
       return integration ;
     } catch (error){
+      
       throw new Error(error)
+
     } finally {
       setLoading(false);
     }

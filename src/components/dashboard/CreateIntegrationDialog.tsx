@@ -128,18 +128,24 @@ export function CreateIntegrationDialog({
   };
 
   const handleCreate = async () => {
-    const result = await onCreated({
-      label: label.trim(),
-      channel: selectedChannel!,
-      config: {
-        recipientEmails: emails,
-        phoneNumbers: phoneNumbers,
-        webhookUrls: webhookUrls,
-      },
-    });
-    console.log("result:", result);
-    setKeys(result);
-    setStep("done");
+    try {
+      const result = await onCreated({
+        label: label.trim(),
+        channel: selectedChannel!,
+        config: {
+          recipientEmails: emails,
+          phoneNumbers: phoneNumbers,
+          webhookUrls: webhookUrls,
+        },
+      });
+      console.log("result:", result);
+      setKeys(result);
+      setStep("done");
+    } catch (error) {
+      console.error("Error creating integration:", error);
+      const responseData = error.response?.data || error.response || {};
+      console.log("Error response data:", responseData);
+    }
   };
 
   const handleCopy = async (key: string, env: "test" | "live") => {

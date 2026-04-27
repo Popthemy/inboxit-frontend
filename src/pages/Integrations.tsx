@@ -188,11 +188,13 @@ export default function Integrations() {
         testKey: res.testKey.full,
         liveKey: res.liveKey.full,
       };
+    
     } catch (error) {
-      console.error("Error creating route:", error);
+      console.error("Error creating route:", error?.response || error);
+      const responseData = error.response?.data || error.response || {};
       toast({
         title: "Error creating route",
-        description: error.message || "Please try again.",
+        description: responseData.message || error.message || "Please try again.",
       });
     }
   };
