@@ -108,6 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout();
       return;
     }
+
     try {
       const res = await authService.refresh(refreshToken);
       const { token } = res;
@@ -164,6 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       saveCookies(token);
       await fetchProfile();
     } catch (err: any) {
+      console.error("Login error:", err.response || err);
       const responseData = err.response?.data || {};
       const specificError =
         responseData?.data?.non_field_errors?.[0] ||
