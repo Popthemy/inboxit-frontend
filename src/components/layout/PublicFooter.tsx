@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Github, Twitter, Linkedin, Mail } from "lucide-react";
+import Logo from "@/components/common/logo";
 
 const footerLinks = {
   product: [
@@ -22,10 +23,14 @@ const footerLinks = {
 };
 
 const socialLinks = [
-  { name: "Twitter", icon: Twitter, href: "#" },
-  { name: "GitHub", icon: Github, href: "#" },
-  { name: "LinkedIn", icon: Linkedin, href: "#" },
-  { name: "Email", icon: Mail, href: "mailto:hello@inboxforms.com" },
+  { name: "Twitter", icon: Twitter, href: "https://x.com/Themy046" },
+  { name: "GitHub", icon: Github, href: "https://github.com/Popthemy" },
+  {
+    name: "LinkedIn",
+    icon: Linkedin,
+    href: "https://www.linkedin.com/in/popoola-oluwatemilorun",
+  },
+  { name: "Email", icon: Mail, href: "mailto:hello@inboxIT.com" },
 ];
 
 export function PublicFooter() {
@@ -35,14 +40,11 @@ export function PublicFooter() {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
           {/* Brand */}
           <div className="col-span-2">
-            <Link to="/" className="flex items-center gap-3 mb-4">
-              <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">IF</span>
-              </div>
-              <span className="font-bold text-xl text-foreground">InboxForms</span>
-            </Link>
+            <Logo />
+
             <p className="text-muted-foreground text-sm max-w-xs mb-6">
-              The simplest way to receive form submissions directly in your inbox. No backend required.
+              The simplest way to receive form submissions directly in your
+              inbox. No backend required.
             </p>
             <div className="flex gap-4">
               {socialLinks.map((social) => (
@@ -112,10 +114,7 @@ export function PublicFooter() {
 
         <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-muted-foreground text-sm">
-            © {new Date().getFullYear()} InboxForms. All rights reserved.
-          </p>
-          <p className="text-muted-foreground text-sm">
-            Made with ❤️ for developers
+            © {new Date().getFullYear()} inboxIT. All rights reserved.
           </p>
         </div>
       </div>
