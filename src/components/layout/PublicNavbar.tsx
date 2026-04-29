@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Moon, Sun, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import Logo from "@/components/common/logo";
 
 const navLinks = [
   { name: "Features", href: "/#features" },
@@ -29,20 +30,8 @@ export function PublicNavbar() {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3">
-            <motion.div
-              className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center"
-              whileHover={{ scale: 1.05 }}
-            >
-              <span className="text-primary-foreground font-bold text-sm">
-                IF
-              </span>
-            </motion.div>
-            <span className="font-bold text-xl text-foreground">
-              InboxForms
-            </span>
-          </Link>
-
+          <Logo />
+         
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
