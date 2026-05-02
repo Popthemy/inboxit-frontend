@@ -13,6 +13,7 @@ import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 // Layouts
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PublicLayout } from "@/components/layout/PublicLayout";
+import { DocsLayout } from "@/components/layout/DocsLayout";
 
 // Public Pages
 import Landing from "./pages/Landing";
@@ -116,9 +117,9 @@ const App = () => (
             <Route
               path="/docs"
               element={
-                <PublicLayout>
+                <DocsLayout>
                   <Documentation />
-                </PublicLayout>
+                </DocsLayout>
               }
             />
             <Route

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300..800&family=Geist+Mono:wght@400..600&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,72 +6,73 @@
 
 @layer base {
   :root {
-    --background: 222 47% 7%;
-    --foreground: 220 14% 91%;
-    --card: 222 47% 9%;
-    --card-foreground: 220 14% 91%;
-    --popover: 222 47% 9%;
-    --popover-foreground: 220 14% 91%;
-    --primary: 239 84% 67%;
+    /* Dark theme — refined neutral, dev-tool inspired (Resend / Linear / Vercel) */
+    --background: 220 14% 5%;
+    --foreground: 220 10% 98%;
+    --card: 220 14% 7%;
+    --card-foreground: 220 10% 98%;
+    --popover: 220 14% 8%;
+    --popover-foreground: 220 10% 98%;
+    --primary: 230 70% 62%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 222 47% 15%;
-    --secondary-foreground: 220 14% 91%;
-    --muted: 222 47% 15%;
-    --muted-foreground: 220 9% 64%;
-    --accent: 239 84% 67%;
+    --secondary: 220 14% 11%;
+    --secondary-foreground: 220 10% 92%;
+    --muted: 220 14% 11%;
+    --muted-foreground: 220 8% 58%;
+    --accent: 230 70% 62%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 58%;
     --destructive-foreground: 0 0% 100%;
-    --success: 142 71% 45%;
+    --success: 142 64% 48%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
+    --warning: 38 92% 52%;
     --warning-foreground: 0 0% 0%;
-    --border: 222 47% 18%;
-    --input: 222 47% 18%;
-    --ring: 239 84% 67%;
-    --radius: 0.75rem;
-    --sidebar-background: 222 47% 6%;
-    --sidebar-foreground: 220 14% 91%;
-    --sidebar-primary: 239 84% 67%;
+    --border: 220 14% 14%;
+    --input: 220 14% 14%;
+    --ring: 230 70% 62%;
+    --radius: 0.5rem;
+    --sidebar-background: 220 14% 4%;
+    --sidebar-foreground: 220 10% 92%;
+    --sidebar-primary: 230 70% 62%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 47% 12%;
-    --sidebar-accent-foreground: 220 14% 91%;
-    --sidebar-border: 222 47% 15%;
-    --sidebar-ring: 239 84% 67%;
+    --sidebar-accent: 220 14% 9%;
+    --sidebar-accent-foreground: 220 10% 92%;
+    --sidebar-border: 220 14% 12%;
+    --sidebar-ring: 230 70% 62%;
   }
 
   .light {
     --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    --foreground: 220 14% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 220 14% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 239 84% 67%;
+    --popover-foreground: 220 14% 10%;
+    --primary: 230 70% 56%;
     --primary-foreground: 0 0% 100%;
     --secondary: 220 14% 96%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary-foreground: 220 14% 10%;
     --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
-    --accent: 239 84% 67%;
+    --muted-foreground: 220 8% 42%;
+    --accent: 230 70% 56%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 100%;
-    --success: 142 71% 45%;
+    --success: 142 64% 38%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
+    --warning: 38 92% 46%;
     --warning-foreground: 0 0% 0%;
-    --border: 220 14% 90%;
-    --input: 220 14% 90%;
-    --ring: 239 84% 67%;
+    --border: 220 14% 91%;
+    --input: 220 14% 91%;
+    --ring: 230 70% 56%;
     --sidebar-background: 220 14% 98%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 239 84% 67%;
+    --sidebar-foreground: 220 14% 10%;
+    --sidebar-primary: 230 70% 56%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 14% 95%;
-    --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 220 14% 90%;
-    --sidebar-ring: 239 84% 67%;
+    --sidebar-accent-foreground: 220 14% 10%;
+    --sidebar-border: 220 14% 91%;
+    --sidebar-ring: 230 70% 56%;
   }
 }
 
@@ -79,22 +80,53 @@
   * {
     @apply border-border;
   }
-  body {
-    @apply bg-background text-foreground font-sans antialiased;
-  }
   html {
     scroll-behavior: smooth;
+    font-family: 'Geist', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    /* Stylistic alternates for a more refined, geometric look */
+    font-feature-settings: 'ss01', 'ss03', 'cv11';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: inherit;
+  }
+  /* Tighter, balanced display typography for headings */
+  h1, h2, h3, h4 {
+    font-feature-settings: 'ss01', 'ss03', 'cv11';
+    text-wrap: balance;
+  }
+  /* Better default body wrapping */
+  p {
+    text-wrap: pretty;
+  }
+  /* Mono should use tabular figures for code/metrics */
+  code, pre, .font-mono {
+    font-feature-settings: 'tnum', 'zero', 'ss02';
   }
 }
 
 @layer utilities {
   .font-mono {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   }
-  
+
   .font-sans {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Geist', 'Inter', system-ui, -apple-system, sans-serif;
   }
+
+  /* Display variant — tightest tracking, for hero headlines */
+  .font-display {
+    font-family: 'Geist', 'Inter', system-ui, sans-serif;
+    font-feature-settings: 'ss01', 'ss03', 'cv11';
+    letter-spacing: -0.035em;
+  }
+
+  /* Text-wrap utilities (Tailwind 3.4+ has these but explicit for safety) */
+  .text-balance { text-wrap: balance; }
+  .text-pretty { text-wrap: pretty; }
 
   /* Animations */
   .animate-fade-up {
@@ -124,9 +156,20 @@
   .stagger-4 { animation-delay: 0.2s; }
   .stagger-5 { animation-delay: 0.25s; }
 
-  /* Gradient text */
+  /* Subtle text accent — used sparingly for one phrase */
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-400;
+    @apply bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/60;
+  }
+
+  /* Dotted background pattern for hero */
+  .bg-dots {
+    background-image: radial-gradient(hsl(var(--border)) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  /* Mono caps label — used for section eyebrows */
+  .label-mono {
+    @apply text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground;
   }
 
   /* Glow effects */
