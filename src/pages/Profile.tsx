@@ -67,7 +67,7 @@ export default function Profile() {
   // use partial<User> for the payload
   const changedData = useMemo(() => {
     const changes: Partial<FormType> = {};
-
+    
     (Object.keys(formData) as Array<keyof FormType>).forEach((key) => {
       const current = formData[key] || "";
       const original = (user?.[key as keyof typeof user] || "") as string;
@@ -78,6 +78,7 @@ export default function Profile() {
     return changes;
   }, [formData, user]);
 
+  
   const isTypingActivated = Object.keys(changedData).length > 0;
 
   const handleSave = async () => {

@@ -7,7 +7,6 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { IntegrationsProvider } from "@/contexts/IntegrationContext";
 import { MessageProvider } from "@/contexts/MessageContext";
 import { DashboardProvider } from "@/contexts/DashboardContext";
-import { NotificationProvider } from "@/contexts/NotificationContext";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 
 // Layouts
@@ -136,13 +135,11 @@ const App = () => (
               path="/dashboard"
               element={
                 <ProtectedRoute>
-                  <NotificationProvider>
-                    <DashboardLayout>
-                      <DashboardProvider>
-                        <Dashboard />
-                      </DashboardProvider>
-                    </DashboardLayout>
-                  </NotificationProvider>
+                  <DashboardLayout>
+                    <DashboardProvider>
+                      <Dashboard />
+                    </DashboardProvider>
+                  </DashboardLayout>
                 </ProtectedRoute>
               }
             />
@@ -151,13 +148,11 @@ const App = () => (
               path="/integrations"
               element={
                 <ProtectedRoute>
-                  <NotificationProvider>
-                    <DashboardLayout>
-                      <IntegrationsProvider>
-                        <Integrations />
-                      </IntegrationsProvider>
-                    </DashboardLayout>
-                  </NotificationProvider>
+                  <DashboardLayout>
+                    <IntegrationsProvider>
+                      <Integrations />
+                    </IntegrationsProvider>
+                  </DashboardLayout>
                 </ProtectedRoute>
               }
             />
@@ -166,13 +161,11 @@ const App = () => (
               path="/messages"
               element={
                 <ProtectedRoute>
-                  <NotificationProvider>
-                    <DashboardLayout>
-                      <MessageProvider>
-                        <Messages />
-                      </MessageProvider>
-                    </DashboardLayout>
-                  </NotificationProvider>
+                  <DashboardLayout>
+                    <MessageProvider>
+                      <Messages />
+                    </MessageProvider>
+                  </DashboardLayout>
                 </ProtectedRoute>
               }
             />
@@ -180,13 +173,11 @@ const App = () => (
               path="/messages/:id"
               element={
                 <ProtectedRoute>
-                  <NotificationProvider>
-                    <DashboardLayout>
-                      <MessageProvider>
-                        <MessageDetail />
-                      </MessageProvider>
-                    </DashboardLayout>
-                  </NotificationProvider>
+                  <DashboardLayout>
+                    <MessageProvider>
+                      <MessageDetail />
+                    </MessageProvider>
+                  </DashboardLayout>
                 </ProtectedRoute>
               }
             />
@@ -194,13 +185,11 @@ const App = () => (
               path="/analytics"
               element={
                 <ProtectedRoute>
-                  <NotificationProvider>
-                    <DashboardLayout>
-                      <DashboardProvider>
-                        <Analytics />
-                      </DashboardProvider>
-                    </DashboardLayout>
-                  </NotificationProvider>
+                  <DashboardLayout>
+                    <DashboardProvider>
+                      <Analytics />
+                    </DashboardProvider>
+                  </DashboardLayout>
                 </ProtectedRoute>
               }
             />
@@ -208,11 +197,9 @@ const App = () => (
               path="/notifications"
               element={
                 <ProtectedRoute>
-                  <NotificationProvider>
-                    <DashboardLayout>
-                      <Notifications />
-                    </DashboardLayout>
-                  </NotificationProvider>
+                  <DashboardLayout>
+                    <Notifications />
+                  </DashboardLayout>
                 </ProtectedRoute>
               }
             />
@@ -220,11 +207,9 @@ const App = () => (
               path="/settings"
               element={
                 <ProtectedRoute>
-                  <NotificationProvider>
-                    <DashboardLayout>
-                      <Settings />
-                    </DashboardLayout>
-                  </NotificationProvider>
+                  <DashboardLayout>
+                    <Settings />
+                  </DashboardLayout>
                 </ProtectedRoute>
               }
             />
@@ -232,11 +217,9 @@ const App = () => (
               path="/profile"
               element={
                 <ProtectedRoute>
-                  <NotificationProvider>
-                    <DashboardLayout>
-                      <Profile />
-                    </DashboardLayout>
-                  </NotificationProvider>
+                  <DashboardLayout>
+                    <Profile />
+                  </DashboardLayout>
                 </ProtectedRoute>
               }
             />
