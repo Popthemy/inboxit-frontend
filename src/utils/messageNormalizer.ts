@@ -47,7 +47,7 @@ export const normalizeMessage = (msg: any): NormalizedMessage => {
     body,
     status: mapStatus(msg.status),
     apiKeyPrefix: msg.apikey ? String(msg.apikey) : "", // Backend gives ID, not prefix
-    date: new Date(msg.acceptedAt).toLocaleDateString("en-US", {
+    date: new Date(msg.acceptedAt).toLocaleString("en-US", {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",

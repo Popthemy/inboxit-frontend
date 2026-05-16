@@ -1,121 +1,203 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Check, X, Zap, Building2, Rocket } from "lucide-react";
+import { Check, X, Zap, Rocket, Crown, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 
 const plans = [
   {
     name: "Free",
-    description: "Perfect for side projects and testing",
-    price: "$0",
+    description: "Testing & personal projects",
+    monthlyPrice: "$0",
+    annualPrice: "$0",
     period: "forever",
     icon: Rocket,
     featured: false,
+    messages: "150 messages/month",
     features: [
-      { name: "100 submissions/month", included: true },
-      { name: "1 form endpoint", included: true },
-      { name: "Email notifications", included: true },
-      { name: "Basic spam protection", included: true },
-      { name: "Community support", included: true },
-      { name: "Custom thank you page", included: false },
-      { name: "File uploads", included: false },
+      { name: "150 messages/month", included: true },
+      { name: "Email delivery", included: true },
+      { name: "Basic dashboard access", included: true },
+      { name: "Inboxit branding on emails", included: true },
+      { name: "Remove branding", included: false },
+      { name: "Slack delivery", included: false },
+      { name: "Auto-reply", included: false },
       { name: "Webhooks", included: false },
-      { name: "WhatsApp notifications", included: false },
+      { name: "Analytics & export", included: false },
       { name: "Priority support", included: false },
     ],
     cta: "Get Started",
     ctaLink: "/signup",
   },
   {
-    name: "Pro",
-    description: "For growing businesses and agencies",
-    price: "$19",
+    name: "Starter",
+    description: "Freelancers & indie hackers",
+    monthlyPrice: "$6",
+    annualPrice: "$58",
     period: "/month",
     icon: Zap,
-    featured: true,
+    featured: false,
+    messages: "2,000 messages/month",
     features: [
-      { name: "10,000 submissions/month", included: true },
-      { name: "Unlimited form endpoints", included: true },
-      { name: "Email notifications", included: true },
-      { name: "Advanced spam protection", included: true },
-      { name: "Priority email support", included: true },
-      { name: "Custom thank you page", included: true },
-      { name: "File uploads (10MB)", included: true },
+      { name: "2,000 messages/month", included: true },
+      { name: "Email delivery", included: true },
+      { name: "Basic dashboard access", included: true },
+      { name: "Remove Inboxit branding", included: true },
+      { name: "Slack delivery", included: true },
+      { name: "Basic auto-reply", included: true },
+      { name: "Webhooks", included: false },
+      { name: "Analytics & export", included: false },
+      { name: "Priority support", included: false },
+      { name: "Custom integrations", included: false },
+    ],
+    cta: "Start Free Trial",
+    ctaLink: "/signup?plan=starter",
+  },
+  {
+    name: "Pro",
+    description: "Agencies & small businesses",
+    monthlyPrice: "$15",
+    annualPrice: "$144",
+    period: "/month",
+    icon: Crown,
+    featured: true,
+    messages: "Unlimited messages",
+    features: [
+      { name: "Unlimited messages", included: true },
+      { name: "Email delivery", included: true },
+      { name: "Full dashboard access", included: true },
+      { name: "Remove Inboxit branding", included: true },
+      { name: "Slack delivery", included: true },
+      { name: "Advanced auto-reply", included: true },
       { name: "Webhooks", included: true },
-      { name: "WhatsApp notifications", included: true },
-      { name: "API access", included: true },
+      { name: "Analytics & export", included: true },
+      { name: "Priority support", included: true },
+      { name: "Custom integrations", included: true },
     ],
     cta: "Start Free Trial",
     ctaLink: "/signup?plan=pro",
-  },
-  {
-    name: "Enterprise",
-    description: "For large teams with custom needs",
-    price: "Custom",
-    period: "",
-    icon: Building2,
-    featured: false,
-    features: [
-      { name: "Unlimited submissions", included: true },
-      { name: "Unlimited form endpoints", included: true },
-      { name: "All Pro features", included: true },
-      { name: "Custom integrations", included: true },
-      { name: "Dedicated account manager", included: true },
-      { name: "SLA guarantee", included: true },
-      { name: "SSO/SAML", included: true },
-      { name: "Custom data retention", included: true },
-      { name: "On-premise option", included: true },
-      { name: "24/7 phone support", included: true },
-    ],
-    cta: "Contact Sales",
-    ctaLink: "#",
   },
 ];
 
 const faqs = [
   {
-    question: "What counts as a submission?",
-    answer: "Each form submission sent to your endpoint counts as one submission, regardless of the number of fields or file size.",
+    question: "What is included in the Free plan?",
+    answer:
+      "The Free plan includes up to 150 messages per month, email delivery, basic dashboard access, and Inboxit branding on forwarded emails. It's great for testing or personal projects.",
   },
   {
-    question: "Can I upgrade or downgrade anytime?",
-    answer: "Yes! You can change your plan at any time. When upgrading, you'll be charged the prorated amount. When downgrading, the change takes effect at the next billing cycle.",
+    question: "Can I remove Inboxit branding from my forwarded emails?",
+    answer:
+      "Yes. Branding removal (clean forwarding with no mention of Inboxit) is available starting from the Starter plan ($6/month) and above.",
   },
   {
-    question: "Do you offer refunds?",
-    answer: "We offer a 14-day money-back guarantee on all paid plans. If you're not satisfied, contact us for a full refund.",
+    question: "How does the auto-reply feature work?",
+    answer:
+      "On Starter and Pro plans, you can set up automatic replies to people who submit your forms. You can use default templates or create custom messages with dynamic fields (e.g., {name}, {email}).",
+  },
+  {
+    question: "What happens if I exceed my monthly message limit?",
+    answer:
+      "You'll get an email notification. Additional messages are queued until your next billing cycle, or you can upgrade instantly to continue without interruption.",
+  },
+  {
+    question: "Is my data and my customers' data secure?",
+    answer:
+      "Yes. All API keys are hashed immediately, data is encrypted in transit, and we follow industry best practices. We never sell or share your data.",
+  },
+  {
+    question: "How easy is it to integrate Inboxit?",
+    answer:
+      "Extremely easy. Just add one CDN script to your site and set your form's action attribute. No backend code, no fetch/axios, and no SMTP setup required. Works with any website.",
+  },
+  {
+    question: "Do you support Slack, Webhooks, or other channels?",
+    answer:
+      "Yes. Slack delivery is available from Starter plan. Webhooks are available on Pro plan for advanced integrations (Zapier, Make.com, etc.).",
+  },
+  {
+    question: "Can I cancel my subscription anytime?",
+    answer:
+      "Yes. You can cancel anytime with no long-term contracts. Your account remains active until the end of your current billing period.",
   },
   {
     question: "What payment methods do you accept?",
-    answer: "We accept all major credit cards (Visa, Mastercard, American Express) and PayPal. Enterprise customers can pay via invoice.",
+    answer: "We accept payments securely through Paystack Checkout..",
   },
   {
-    question: "Is there a free trial for Pro?",
-    answer: "Yes! Pro comes with a 14-day free trial. No credit card required to start.",
+    question: "Is there a money-back guarantee?",
+    answer:
+      "Yes. All paid plans come with a 14-day money-back guarantee. If Inboxit doesn't save you significant time, you get a full refund, no questions asked.",
+  },
+];
+
+const nigeriaPricing = [
+  {
+    tier: "Free",
+    price: "\u20A60",
+    messages: "100",
+    target: "Students & testing",
   },
   {
-    question: "When will WhatsApp notifications be available?",
-    answer: "WhatsApp notifications are currently in beta. Pro and Enterprise customers will get early access in Q1 2024.",
+    tier: "Starter",
+    price: "\u20A64,500 /mo",
+    messages: "1,500",
+    target: "Freelancers",
+  },
+  {
+    tier: "Pro",
+    price: "\u20A69,500 /mo",
+    messages: "Unlimited",
+    target: "Agencies & small businesses",
   },
 ];
 
 export default function Pricing() {
+  const [isAnnual, setIsAnnual] = useState(false);
+
   return (
     <div className="py-20 lg:py-32">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
-          className="text-center mb-16"
+          className="text-center mb-12"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
             Simple, transparent pricing
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
             Start free, scale as you grow. No hidden fees, no surprises.
           </p>
+
+          {/* Billing Toggle */}
+          <div className="flex items-center justify-center gap-3">
+            <span
+              className={`text-sm font-medium ${!isAnnual ? "text-foreground" : "text-muted-foreground"}`}
+            >
+              Monthly
+            </span>
+            <Switch checked={isAnnual} onCheckedChange={setIsAnnual} />
+            <span
+              className={`text-sm font-medium ${isAnnual ? "text-foreground" : "text-muted-foreground"}`}
+            >
+              Annual
+            </span>
+            {isAnnual && (
+              <span className="bg-success/10 text-success text-xs font-semibold px-2 py-0.5 rounded-full">
+                Save 20%
+              </span>
+            )}
+          </div>
         </motion.div>
 
         {/* Pricing Cards */}
@@ -149,9 +231,20 @@ export default function Pricing() {
                   <CardTitle className="text-2xl">{plan.name}</CardTitle>
                   <CardDescription>{plan.description}</CardDescription>
                   <div className="mt-4">
-                    <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                    <span className="text-muted-foreground">{plan.period}</span>
+                    <span className="text-4xl font-bold text-foreground">
+                      {isAnnual ? plan.annualPrice : plan.monthlyPrice}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {plan.name === "Free"
+                        ? ""
+                        : isAnnual
+                          ? "/year"
+                          : plan.period}
+                    </span>
                   </div>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    {plan.messages}
+                  </p>
                 </CardHeader>
                 <CardContent>
                   <Button
@@ -171,7 +264,9 @@ export default function Pricing() {
                         )}
                         <span
                           className={
-                            feature.included ? "text-foreground" : "text-muted-foreground/50"
+                            feature.included
+                              ? "text-foreground"
+                              : "text-muted-foreground/50"
                           }
                         >
                           {feature.name}
@@ -203,7 +298,9 @@ export default function Pricing() {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.05 }}
               >
-                <h3 className="font-semibold text-foreground mb-2">{faq.question}</h3>
+                <h3 className="font-semibold text-foreground mb-2">
+                  {faq.question}
+                </h3>
                 <p className="text-muted-foreground">{faq.answer}</p>
               </motion.div>
             ))}
@@ -221,7 +318,7 @@ export default function Pricing() {
             Still have questions? We're here to help.
           </p>
           <Button variant="outline" size="lg">
-            Contact Sales
+            Contact Support
           </Button>
         </motion.div>
       </div>
