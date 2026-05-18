@@ -15,6 +15,7 @@ import {
   Layers,
   Menu,
 } from "lucide-react";
+import { SEO } from "@/components/SEO";
 
 // ─── Code examples ────────────────────────────────────────────────────────────
 
@@ -94,17 +95,33 @@ Toast displayed`;
 // ─── Section / nav data ───────────────────────────────────────────────────────
 
 const DOC_SECTIONS = [
-  { id: "introduction",        label: "What is Inboxit?",    category: "Getting Started"  },
-  { id: "quick-start",         label: "Quick Start",         category: "Getting Started"  },
-  { id: "usage-modes",         label: "Usage Modes",         category: "Integration"      },
-  { id: "script-attributes",   label: "Script Attributes",   category: "Integration"      },
-  { id: "commands",            label: "Commands",            category: "Integration"      },
-  { id: "spam-protection",     label: "Spam Protection",     category: "Features"         },
-  { id: "toast-notifications", label: "Toast Notifications", category: "Features"         },
-  { id: "architecture",        label: "Architecture",        category: "Internals"        },
-  { id: "common-mistakes",     label: "Common Mistakes",     category: "Troubleshooting"  },
-  { id: "why-inboxit",         label: "Why Inboxit?",        category: "Reference"        },
-  { id: "security",            label: "Security",            category: "Reference"        },
+  {
+    id: "introduction",
+    label: "What is Inboxit?",
+    category: "Getting Started",
+  },
+  { id: "quick-start", label: "Quick Start", category: "Getting Started" },
+  { id: "usage-modes", label: "Usage Modes", category: "Integration" },
+  {
+    id: "script-attributes",
+    label: "Script Attributes",
+    category: "Integration",
+  },
+  { id: "commands", label: "Commands", category: "Integration" },
+  { id: "spam-protection", label: "Spam Protection", category: "Features" },
+  {
+    id: "toast-notifications",
+    label: "Toast Notifications",
+    category: "Features",
+  },
+  { id: "architecture", label: "Architecture", category: "Internals" },
+  {
+    id: "common-mistakes",
+    label: "Common Mistakes",
+    category: "Troubleshooting",
+  },
+  { id: "why-inboxit", label: "Why Inboxit?", category: "Reference" },
+  { id: "security", label: "Security", category: "Reference" },
 ] as const;
 
 const CATEGORIES = [
@@ -133,22 +150,24 @@ function SidebarNav({
             {category}
           </p>
           <ul className="space-y-0.5">
-            {DOC_SECTIONS.filter((s) => s.category === category).map((section) => (
-              <li key={section.id}>
-                <a
-                  href={`#${section.id}`}
-                  onClick={onNavigate}
-                  className={cn(
-                    "block text-sm rounded-md px-2 py-1.5 transition-colors",
-                    activeSection === section.id
-                      ? "bg-primary/10 text-primary font-medium"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                  )}
-                >
-                  {section.label}
-                </a>
-              </li>
-            ))}
+            {DOC_SECTIONS.filter((s) => s.category === category).map(
+              (section) => (
+                <li key={section.id}>
+                  <a
+                    href={`#${section.id}`}
+                    onClick={onNavigate}
+                    className={cn(
+                      "block text-sm rounded-md px-2 py-1.5 transition-colors",
+                      activeSection === section.id
+                        ? "bg-primary/10 text-primary font-medium"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                    )}
+                  >
+                    {section.label}
+                  </a>
+                </li>
+              ),
+            )}
           </ul>
         </div>
       ))}
@@ -172,7 +191,7 @@ export default function Documentation() {
         ([entry]) => {
           if (entry.isIntersecting) setActiveSection(id);
         },
-        { rootMargin: "-20% 0px -70% 0px", threshold: 0 }
+        { rootMargin: "-20% 0px -70% 0px", threshold: 0 },
       );
       obs.observe(el);
       observers.push(obs);
@@ -185,6 +204,18 @@ export default function Documentation() {
     <>
       {/* ── Mobile sticky bar ──────────────────────────────────────────────── */}
       <div className="md:hidden sticky top-16 z-30 flex items-center gap-3 border-b border-border bg-background/95 backdrop-blur px-4 py-2">
+        <SEO
+          title="Documentation — Inboxit form handler integration guide"
+          description="Learn how to integrate Inboxit with HTML, React, Vue, or any CMS. Script tag setup, programmatic API, honeypot spam protection, and webhook routing."
+          path="/docs"
+          jsonLd={{
+            "@context": "https://schema.org",
+            "@type": "TechArticle",
+            headline: "Inboxit Documentation",
+            description: "Integration guide for Inboxit form handler.",
+            author: { "@type": "Organization", name: "Inboxit" },
+          }}
+        />
         <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
           <SheetTrigger asChild>
             <Button variant="outline" size="sm" className="gap-2">
@@ -214,7 +245,6 @@ export default function Documentation() {
 
         {/* ── Main content ───────────────────────────────────────────────── */}
         <main className="flex-1 min-w-0 py-10 px-6 lg:px-12 max-w-3xl">
-
           {/* Introduction */}
           <section id="introduction" className="mb-12">
             <h2 className="scroll-mt-20 text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
@@ -222,17 +252,21 @@ export default function Documentation() {
               What is Inboxit?
             </h2>
             <p className="text-muted-foreground mb-4">
-              Inboxit lets you send messages from <strong>any website form</strong> — without
-              building a backend, configuring SMTP, or writing API logic.
+              Inboxit lets you send messages from{" "}
+              <strong>any website form</strong> — without building a backend,
+              configuring SMTP, or writing API logic.
             </p>
             <div className="flex flex-wrap gap-2 mb-4">
-              {["Static HTML", "React / Vue / Angular", "Modals & SPAs", "CMS Platforms"].map(
-                (tag) => (
-                  <Badge key={tag} variant="secondary">
-                    {tag}
-                  </Badge>
-                )
-              )}
+              {[
+                "Static HTML",
+                "React / Vue / Angular",
+                "Modals & SPAs",
+                "CMS Platforms",
+              ].map((tag) => (
+                <Badge key={tag} variant="secondary">
+                  {tag}
+                </Badge>
+              ))}
             </div>
             <p className="text-sm text-muted-foreground font-medium">
               Add one script. Keep your form. Inboxit handles the rest.
@@ -245,7 +279,9 @@ export default function Documentation() {
             <h2 className="scroll-mt-20 text-xl font-semibold text-foreground mb-4">
               Quick Start
             </h2>
-            <p className="text-muted-foreground mb-6">Get up and running in 2 steps:</p>
+            <p className="text-muted-foreground mb-6">
+              Get up and running in 2 steps:
+            </p>
 
             <div className="mb-6">
               <h3 className="font-medium mb-3 flex items-center gap-2">
@@ -254,7 +290,11 @@ export default function Documentation() {
                 </span>
                 Create your form with honeypot protection
               </h3>
-              <CodeBlock code={htmlFormExample} language="html" title="Your Form (index.html)" />
+              <CodeBlock
+                code={htmlFormExample}
+                language="html"
+                title="Your Form (index.html)"
+              />
             </div>
 
             <div className="mb-6">
@@ -274,8 +314,9 @@ export default function Documentation() {
             <div className="flex items-start gap-2 p-3 rounded-lg bg-success/10 border border-success/20">
               <CheckCircle className="h-5 w-5 text-success mt-0.5 shrink-0" />
               <div className="text-sm">
-                <strong>Done!</strong> Inboxit now handles form submission, toast notifications,
-                form reset, and spam filtering automatically.
+                <strong>Done!</strong> Inboxit now handles form submission,
+                toast notifications, form reset, and spam filtering
+                automatically.
               </div>
             </div>
           </section>
@@ -291,38 +332,56 @@ export default function Documentation() {
             <div className="flex items-start gap-2 p-3 rounded-lg bg-warning/10 border border-warning/20 mb-6">
               <AlertTriangle className="h-5 w-5 text-warning mt-0.5 shrink-0" />
               <div className="text-sm">
-                <strong>Important:</strong> Inboxit supports two modes. Do <strong>NOT</strong>{" "}
-                mix them.
+                <strong>Important:</strong> Inboxit supports two modes. Do{" "}
+                <strong>NOT</strong> mix them.
               </div>
             </div>
 
             <Tabs defaultValue="script">
               <TabsList className="mb-4">
                 <TabsTrigger value="script">🧩 Script Mode</TabsTrigger>
-                <TabsTrigger value="programmatic">⚛️ Programmatic Mode</TabsTrigger>
+                <TabsTrigger value="programmatic">
+                  ⚛️ Programmatic Mode
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="script" className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  Use when form exists in the DOM and you don't need manual JS submission.
+                  Use when form exists in the DOM and you don't need manual JS
+                  submission.
                 </p>
                 <div className="grid gap-2">
                   {[
-                    { icon: CheckCircle, text: "Form must exist in DOM", ok: true },
+                    {
+                      icon: CheckCircle,
+                      text: "Form must exist in DOM",
+                      ok: true,
+                    },
                     {
                       icon: CheckCircle,
                       text: "Include hidden 'website' field for spam protection",
                       ok: true,
                     },
-                    { icon: XCircle, text: "Do not remove form before submit", ok: false },
-                    { icon: XCircle, text: "Do not manually call sendEmail", ok: false },
+                    {
+                      icon: XCircle,
+                      text: "Do not remove form before submit",
+                      ok: false,
+                    },
+                    {
+                      icon: XCircle,
+                      text: "Do not manually call sendEmail",
+                      ok: false,
+                    },
                     {
                       icon: XCircle,
                       text: "Do not use in React/Vue controlled forms",
                       ok: false,
                     },
                   ].map((rule) => (
-                    <div key={rule.text} className="flex items-center gap-2 text-sm">
+                    <div
+                      key={rule.text}
+                      className="flex items-center gap-2 text-sm"
+                    >
                       <rule.icon
                         className={`h-4 w-4 ${rule.ok ? "text-success" : "text-destructive"}`}
                       />
@@ -334,8 +393,8 @@ export default function Documentation() {
 
               <TabsContent value="programmatic" className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  Use with React, Vue, Angular, or dynamic/modal forms where you need full
-                  control.
+                  Use with React, Vue, Angular, or dynamic/modal forms where you
+                  need full control.
                 </p>
                 <CodeBlock
                   code={reactSetupExample}
@@ -349,16 +408,31 @@ export default function Documentation() {
                 />
                 <div className="grid gap-2 mt-4">
                   {[
-                    { icon: CheckCircle, text: "Use await inboxit(...)", ok: true },
-                    { icon: CheckCircle, text: "Handle form reset yourself", ok: true },
+                    {
+                      icon: CheckCircle,
+                      text: "Use await inboxit(...)",
+                      ok: true,
+                    },
+                    {
+                      icon: CheckCircle,
+                      text: "Handle form reset yourself",
+                      ok: true,
+                    },
                     {
                       icon: CheckCircle,
                       text: "Implement honeypot check (website field)",
                       ok: true,
                     },
-                    { icon: XCircle, text: "Do NOT use data-form attribute", ok: false },
+                    {
+                      icon: XCircle,
+                      text: "Do NOT use data-form attribute",
+                      ok: false,
+                    },
                   ].map((rule) => (
-                    <div key={rule.text} className="flex items-center gap-2 text-sm">
+                    <div
+                      key={rule.text}
+                      className="flex items-center gap-2 text-sm"
+                    >
                       <rule.icon
                         className={`h-4 w-4 ${rule.ok ? "text-success" : "text-destructive"}`}
                       />
@@ -380,20 +454,34 @@ export default function Documentation() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="text-left py-2 pr-4 font-medium text-foreground">Attribute</th>
-                    <th className="text-left py-2 pr-4 font-medium text-foreground">Required</th>
-                    <th className="text-left py-2 font-medium text-foreground">Description</th>
+                    <th className="text-left py-2 pr-4 font-medium text-foreground">
+                      Attribute
+                    </th>
+                    <th className="text-left py-2 pr-4 font-medium text-foreground">
+                      Required
+                    </th>
+                    <th className="text-left py-2 font-medium text-foreground">
+                      Description
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="text-muted-foreground">
                   {[
-                    { attr: "data-api-key", req: true, desc: "Your Inboxit public API key" },
+                    {
+                      attr: "data-api-key",
+                      req: true,
+                      desc: "Your Inboxit public API key",
+                    },
                     {
                       attr: "data-form",
                       req: false,
                       desc: "Form ID to auto-bind (Script Mode only)",
                     },
-                    { attr: "data-subject", req: false, desc: "Email subject line" },
+                    {
+                      attr: "data-subject",
+                      req: false,
+                      desc: "Email subject line",
+                    },
                     {
                       attr: "data-success-message",
                       req: false,
@@ -406,7 +494,9 @@ export default function Documentation() {
                     },
                   ].map((row) => (
                     <tr key={row.attr} className="border-b border-border/50">
-                      <td className="py-2 pr-4 font-mono text-xs text-foreground">{row.attr}</td>
+                      <td className="py-2 pr-4 font-mono text-xs text-foreground">
+                        {row.attr}
+                      </td>
                       <td className="py-2 pr-4">
                         <Badge
                           variant={row.req ? "default" : "secondary"}
@@ -448,9 +538,11 @@ export default function Documentation() {
             </h2>
             <p className="text-sm text-muted-foreground mb-4">
               Add a hidden field named{" "}
-              <code className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs">website</code>{" "}
-              to your form. Inboxit automatically discards submissions where this field is filled
-              — only bots fill hidden fields.
+              <code className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs">
+                website
+              </code>{" "}
+              to your form. Inboxit automatically discards submissions where
+              this field is filled — only bots fill hidden fields.
             </p>
             <CodeBlock
               code={`<!-- Add inside your form -->
@@ -473,11 +565,15 @@ export default function Documentation() {
             <div className="grid sm:grid-cols-2 gap-3">
               <div className="p-3 rounded-lg bg-success/10 border border-success/20 text-sm">
                 <strong className="text-success">✓ Success:</strong>
-                <span className="text-muted-foreground ml-1">Message sent successfully</span>
+                <span className="text-muted-foreground ml-1">
+                  Message sent successfully
+                </span>
               </div>
               <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-sm">
                 <strong className="text-destructive">✕ Error:</strong>
-                <span className="text-muted-foreground ml-1">Failed to send message</span>
+                <span className="text-muted-foreground ml-1">
+                  Failed to send message
+                </span>
               </div>
             </div>
           </section>
@@ -489,9 +585,14 @@ export default function Documentation() {
               Architecture
             </h2>
             <p className="text-sm text-muted-foreground mb-4">
-              Inboxit uses a <strong>Command Queue Pattern</strong> with async resolution.
+              Inboxit uses a <strong>Command Queue Pattern</strong> with async
+              resolution.
             </p>
-            <CodeBlock code={architectureDiagram} language="text" title="Flow" />
+            <CodeBlock
+              code={architectureDiagram}
+              language="text"
+              title="Flow"
+            />
           </section>
           <hr className="border-border mb-12" />
 
@@ -503,10 +604,15 @@ export default function Documentation() {
             </h2>
             <div className="space-y-5">
               <div>
-                <h3 className="font-medium text-sm mb-1">❌ Mixing both modes</h3>
+                <h3 className="font-medium text-sm mb-1">
+                  ❌ Mixing both modes
+                </h3>
                 <p className="text-xs text-muted-foreground mb-2">
                   Using{" "}
-                  <code className="font-mono bg-muted px-1 rounded">data-form</code> AND calling{" "}
+                  <code className="font-mono bg-muted px-1 rounded">
+                    data-form
+                  </code>{" "}
+                  AND calling{" "}
                   <code className="font-mono bg-muted px-1 rounded">
                     inboxit("sendEmail")
                   </code>{" "}
@@ -516,8 +622,8 @@ export default function Documentation() {
               <div>
                 <h3 className="font-medium text-sm mb-1">❌ Form not in DOM</h3>
                 <p className="text-xs text-muted-foreground">
-                  Inboxit cannot detect forms inside closed modals or unmounted components. Use
-                  Programmatic Mode for dynamic forms.
+                  Inboxit cannot detect forms inside closed modals or unmounted
+                  components. Use Programmatic Mode for dynamic forms.
                 </p>
               </div>
               <div>
@@ -541,16 +647,26 @@ await inboxit("sendEmail", data);  // ✅ Correct`}
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="text-left py-2 pr-4 font-medium text-foreground">Service</th>
-                    <th className="text-left py-2 font-medium text-foreground">Problem</th>
+                    <th className="text-left py-2 pr-4 font-medium text-foreground">
+                      Service
+                    </th>
+                    <th className="text-left py-2 font-medium text-foreground">
+                      Problem
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="text-muted-foreground">
                   {[
-                    { service: "Formspree", problem: "Requires external form setup" },
+                    {
+                      service: "Formspree",
+                      problem: "Requires external form setup",
+                    },
                     { service: "EmailJS", problem: "Requires SDK + templates" },
                     { service: "SMTP", problem: "Requires backend server" },
-                    { service: "Serverless", problem: "Requires deployment pipeline" },
+                    {
+                      service: "Serverless",
+                      problem: "Requires deployment pipeline",
+                    },
                     {
                       service: "Inboxit ✨",
                       problem: "Works directly with your existing form",
@@ -560,7 +676,8 @@ await inboxit("sendEmail", data);  // ✅ Correct`}
                       key={row.service}
                       className={cn(
                         "border-b border-border/50",
-                        row.service.includes("Inboxit") && "text-primary font-medium"
+                        row.service.includes("Inboxit") &&
+                          "text-primary font-medium",
                       )}
                     >
                       <td className="py-2 pr-4 font-medium">{row.service}</td>
@@ -593,7 +710,6 @@ await inboxit("sendEmail", data);  // ✅ Correct`}
               ))}
             </div>
           </section>
-
         </main>
 
         {/* ── Right TOC (xl only) ────────────────────────────────────────── */}
@@ -611,7 +727,7 @@ await inboxit("sendEmail", data);  // ✅ Correct`}
                       "block text-xs leading-snug transition-colors",
                       activeSection === s.id
                         ? "text-primary font-medium"
-                        : "text-muted-foreground hover:text-foreground"
+                        : "text-muted-foreground hover:text-foreground",
                     )}
                   >
                     {s.label}

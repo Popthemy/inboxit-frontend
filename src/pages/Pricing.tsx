@@ -11,6 +11,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { SEO } from "@/components/SEO";
 
 const plans = [
   {
@@ -165,6 +166,42 @@ export default function Pricing() {
 
   return (
     <div className="py-20 lg:py-32">
+      <SEO
+        title="Pricing — Inboxit form handler plans from $0"
+        description="Simple pricing for Inboxit: Free 150 messages/month, Starter $6/mo, Pro $15/mo. Email, Slack, and webhook delivery with no backend."
+        path="/pricing"
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: faqs.map((f) => ({
+              "@type": "Question",
+              name: f.question,
+              acceptedAnswer: { "@type": "Answer", text: f.answer },
+            })),
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: "Inboxit",
+            description:
+              "Form submission handler that delivers messages by email, Slack, or webhook with no backend required.",
+            brand: { "@type": "Brand", name: "Inboxit" },
+            offers: plans.map((p) => ({
+              "@type": "Offer",
+              name: p.name,
+              price:
+                (isAnnual ? p.annualPrice : p.monthlyPrice).replace(
+                  /[^0-9.]/g,
+                  "",
+                ) || "0",
+              priceCurrency: "USD",
+              availability: "https://schema.org/InStock",
+              url: "https://inboxit-frontend.vercel.app/pricing",
+            })),
+          },
+        ]}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
