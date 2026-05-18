@@ -2,6 +2,8 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Zap, Shield, Bug, Rocket } from "lucide-react";
+import { SEO } from "@/components/SEO";
+
 
 const releases = [
   {
@@ -71,13 +73,25 @@ const statusItems = [
 export default function Changelog() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
+      <SEO
+        title="Changelog — Inboxit product updates and releases"
+        description="Latest releases, features, and improvements to Inboxit's form submission handler. Track new integrations, spam protection, and dashboard updates."
+        path="/changelog"
+      />
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Changelog & Status</h1>
-        <p className="text-muted-foreground">Product updates, releases, and system status.</p>
+        <h1 className="text-2xl font-bold text-foreground">
+          Changelog & Status
+        </h1>
+        <p className="text-muted-foreground">
+          Product updates, releases, and system status.
+        </p>
       </div>
 
       {/* System Status */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
         <Card className="border-border bg-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -88,9 +102,15 @@ export default function Changelog() {
           <CardContent>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {statusItems.map((item) => (
-                <div key={item.name} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                <div
+                  key={item.name}
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/30"
+                >
                   <span className="text-sm text-foreground">{item.name}</span>
-                  <Badge variant={item.ok ? "default" : "secondary"} className="text-xs">
+                  <Badge
+                    variant={item.ok ? "default" : "secondary"}
+                    className="text-xs"
+                  >
                     {item.status}
                   </Badge>
                 </div>
@@ -120,7 +140,9 @@ export default function Changelog() {
                     {release.tag === "latest" && (
                       <Badge className="text-xs">Latest</Badge>
                     )}
-                    <span className="text-sm text-muted-foreground">{release.date}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {release.date}
+                    </span>
                   </div>
                 </div>
               </CardHeader>
@@ -128,10 +150,15 @@ export default function Changelog() {
                 <ul className="space-y-2">
                   {release.changes.map((change, i) => (
                     <li key={i} className="flex items-start gap-3 text-sm">
-                      <Badge variant="secondary" className={`text-xs shrink-0 ${typeColors[change.type]}`}>
+                      <Badge
+                        variant="secondary"
+                        className={`text-xs shrink-0 ${typeColors[change.type]}`}
+                      >
                         {change.type}
                       </Badge>
-                      <span className="text-muted-foreground">{change.text}</span>
+                      <span className="text-muted-foreground">
+                        {change.text}
+                      </span>
                     </li>
                   ))}
                 </ul>
