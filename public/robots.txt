@@ -12,3 +12,22 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /dashboard
+Disallow: /integrations
+Disallow: /messages
+Disallow: /analytics
+Disallow: /notifications
+Disallow: /settings
+Disallow: /profile
+Disallow: /credits
+Disallow: /transactions
+Disallow: /refer
+Disallow: /checkout
+Disallow: /redeem
+Disallow: /onboarding
+Disallow: /verify-otp
+Disallow: /resend-otp
+Disallow: /reset-password
+Disallow: /forgot-password
+
+Sitemap: https://inboxit-frontend.vercel.app/sitemap.xml
