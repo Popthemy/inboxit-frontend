@@ -202,8 +202,6 @@ export default function Documentation() {
 
   return (
     <>
-      {/* ── Mobile sticky bar ──────────────────────────────────────────────── */}
-      <div className="md:hidden sticky top-16 z-30 flex items-center gap-3 border-b border-border bg-background/95 backdrop-blur px-4 py-2">
         <SEO
           title="Documentation — Inboxit form handler integration guide"
           description="Learn how to integrate Inboxit with HTML, React, Vue, or any CMS. Script tag setup, programmatic API, honeypot spam protection, and webhook routing."
@@ -216,6 +214,8 @@ export default function Documentation() {
             author: { "@type": "Organization", name: "Inboxit" },
           }}
         />
+      {/* ── Mobile sticky bar ──────────────────────────────────────────────── */}
+      <div className="md:hidden sticky top-16 z-30 flex items-center gap-3 border-b border-border bg-background/95 backdrop-blur px-4 py-2">
         <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
           <SheetTrigger asChild>
             <Button variant="outline" size="sm" className="gap-2">
